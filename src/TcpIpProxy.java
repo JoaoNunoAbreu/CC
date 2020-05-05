@@ -1,5 +1,3 @@
-package com.company;
-
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -10,9 +8,9 @@ public class TcpIpProxy {
     private final int port;
 
     public TcpIpProxy(String remoteIp, int remotePort, int port) {
-        this.remoteIp = remoteIp;
-        this.remotePort = remotePort;
-        this.port = port;
+        this.remoteIp = remoteIp;     // localhost
+        this.remotePort = remotePort; // 12346
+        this.port = port;             // 12345
     }
 
     public void listen() {

@@ -1,5 +1,3 @@
-package com.company;
-
 import java.io.IOException;
 import java.net.Socket;
 
@@ -19,7 +17,7 @@ public class Connection implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("new connection {}:{}" + clientsocket.getInetAddress().getHostName() + clientsocket.getPort());
+        System.out.println("new connection " + clientsocket.getInetAddress().getHostName()+":" + clientsocket.getPort());
         try {
             serverConnection = new Socket(remoteIp, remotePort);
         } catch (IOException e) {
@@ -27,14 +25,14 @@ public class Connection implements Runnable {
             return;
         }
 
-        System.out.println("Proxy {}:{} <-> {}:{}" + clientsocket.getInetAddress().getHostName() + clientsocket.getPort() + serverConnection.getInetAddress().getHostName() + serverConnection.getPort());
+        System.out.println("Proxy " + clientsocket.getInetAddress().getHostName() + ":" + clientsocket.getPort() + " <-> " + serverConnection.getInetAddress().getHostName()+":"+serverConnection.getPort());
 
-        new Thread(new AnonGW(clientsocket, serverConnection)).start();
-        new Thread(new AnonGW(serverConnection, clientsocket)).start();
+        new Thread(new Proxy(clientsocket, serverConnection)).start();
+        new Thread(new Proxy(serverConnection, clientsocket)).start();
         new Thread(() -> {
             while (true) {
                 if (clientsocket.isClosed()) {
-                    System.out.println("client socket ({}:{}) closed" + clientsocket.getInetAddress().getHostName() + clientsocket.getPort());
+                    System.out.println("client socket ( " + clientsocket.getInetAddress().getHostName()+":" + clientsocket.getPort());
                     closeServerConnection();
                     break;
                 }
@@ -49,7 +47,7 @@ public class Connection implements Runnable {
     private void closeServerConnection() {
         if (serverConnection != null && !serverConnection.isClosed()) {
             try {
-                System.out.println("closing remote host connection {}:{}" + serverConnection.getInetAddress().getHostName() + serverConnection.getPort());
+                System.out.println("closing remote host connection " + serverConnection.getInetAddress().getHostName() + ":" + serverConnection.getPort());
                 serverConnection.close();
             } catch (IOException e) {
                 e.printStackTrace();
