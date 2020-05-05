@@ -19,6 +19,8 @@ public class Connection implements Runnable {
     public void run() {
         System.out.println("new connection " + clientsocket.getInetAddress().getHostName()+":" + clientsocket.getPort());
         try {
+            System.out.println("remoteIp = " + remoteIp);
+            System.out.println("remotePort = " + remotePort);
             serverConnection = new Socket(remoteIp, remotePort);
         } catch (IOException e) {
             e.printStackTrace();

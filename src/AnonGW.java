@@ -6,7 +6,11 @@ public class AnonGW {
             System.out.println("Número de argumentos inválidos!");
         }
         else {
-            TcpIpProxy tcpIpProxy = new TcpIpProxy(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+            String remoteHost = args[0];
+            Integer remotePort = Integer.parseInt(args[1]);
+            Integer port = Integer.parseInt(args[2]);
+            System.out.println("Começando server proxy na porta " + port + " para o remote " + remoteHost+":"+remotePort);
+            TcpIpProxy tcpIpProxy = new TcpIpProxy(remoteHost, remotePort, port);
             tcpIpProxy.listen();
         }
     }
