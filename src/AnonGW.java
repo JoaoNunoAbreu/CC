@@ -2,6 +2,9 @@ public class AnonGW {
 
     public static void main(String args[]) {
 
+        /**
+         * Recebe o IP destino, porta destino e porta de entrada por esta ordem
+         */
         if(args.length != 3){
             System.out.println("Número de argumentos inválidos!");
         }

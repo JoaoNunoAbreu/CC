@@ -15,6 +15,10 @@ public class Connection implements Runnable {
         this.remotePort = remotePort;
     }
 
+    /**
+     * Cria um novo socket (destino)
+     * Estabelece ligação entre o socket criado anteriormente este (nos 2 sentidos)
+     */
     @Override
     public void run() {
         System.out.println("new connection " + clientsocket.getInetAddress().getHostName()+":" + clientsocket.getPort());
@@ -31,29 +35,5 @@ public class Connection implements Runnable {
 
         new Thread(new Proxy(clientsocket, serverConnection)).start();
         new Thread(new Proxy(serverConnection, clientsocket)).start();
-        new Thread(() -> {
-            while (true) {
-                if (clientsocket.isClosed()) {
-                    System.out.println("client socket ( " + clientsocket.getInetAddress().getHostName()+":" + clientsocket.getPort());
-                    closeServerConnection();
-                    break;
-                }
-
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ignored) {}
-            }
-        }).start();
-    }
-
-    private void closeServerConnection() {
-        if (serverConnection != null && !serverConnection.isClosed()) {
-            try {
-                System.out.println("closing remote host connection " + serverConnection.getInetAddress().getHostName() + ":" + serverConnection.getPort());
-                serverConnection.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

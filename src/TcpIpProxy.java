@@ -13,21 +13,19 @@ public class TcpIpProxy {
         this.port = port;             // 12345
     }
 
+    /**
+     * Cria um socket (do cliente) para cada conexão efetuada na porta de entrada
+     */
     public void listen() {
         try {
             ServerSocket serverSocket = new ServerSocket(port);
             System.out.println("listening...");
             while (true) {
                 Socket socket = serverSocket.accept();
-                startThread(new Connection(socket, remoteIp, remotePort));
+                new Thread(new Connection(socket, remoteIp, remotePort)).start();
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
-    }
-
-    private void startThread(Connection connection) {
-        Thread t = new Thread(connection);
-        t.start();
     }
 }

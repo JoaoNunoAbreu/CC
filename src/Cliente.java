@@ -5,11 +5,14 @@ import java.net.Socket;
 
 public class Cliente {
     public static void main(String[] args) throws Exception {
-        if(args.length != 1){
+        /**
+         * Recebe o IP e a porta ao qual se quer ligar
+         */
+        if(args.length != 2){
             System.out.println("Número de argumentos inválidos!");
         }
         else {
-            Socket s = new Socket("localhost", Integer.parseInt(args[0])); // Únicos valores a alterar são estes
+            Socket s = new Socket(args[0], Integer.parseInt(args[1])); // Únicos valores a alterar são estes
 
             BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
             PrintWriter pw = new PrintWriter(s.getOutputStream());

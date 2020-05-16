@@ -14,14 +14,18 @@ public class Proxy implements Runnable {
         this.out = out;
     }
 
+    /**
+     * Troca mensagens entre 2 sockets
+     */
     @Override
     public void run() {
         System.out.println("Proxy " + in.getInetAddress().getHostName()+":"+in.getPort() +"-->" +out.getInetAddress().getHostName()+":"+out.getPort());
         try {
-            InputStream inputStream = getInputStream();
-            OutputStream outputStream = getOutputStream();
+            InputStream inputStream = in.getInputStream();
+            OutputStream outputStream = out.getOutputStream();
 
             if (inputStream == null || outputStream == null) {
+                System.out.println("InputStream ou outputStream é nulo");
                 return;
             }
 
@@ -30,7 +34,6 @@ public class Proxy implements Runnable {
             while (-1 != (bytesRead = inputStream.read(reply))) {
                 outputStream.write(reply, 0, bytesRead);
             }
-        } catch (SocketException ignored) {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -40,25 +43,5 @@ public class Proxy implements Runnable {
                 e.printStackTrace();
             }
         }
-    }
-
-    private InputStream getInputStream() {
-        try {
-            return in.getInputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    private OutputStream getOutputStream() {
-        try {
-            return out.getOutputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
     }
 }
