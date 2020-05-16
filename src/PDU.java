@@ -31,24 +31,6 @@ public class PDU {
         this.sizebytes = sizebytes;
     }
 
-    public static final byte REGISTER =0x00;
-    public static final byte CONSULT_REQUEST =0x01;
-    public static final byte CONSULT_RESPONSE =0x02;
-    public static final byte PROBE_REQUEST =0x03;
-    public static final byte PROBE_RESPONSE =0x04;
-    public static final byte REQUEST =0x05;
-    public static final byte DATA =0x06;
-
-    //Nossos
-    public static final byte ARE_YOU_THERE =0x07;
-    public static final byte I_AM_HERE =0x08;
-    public static final byte CONFIRM =0x09;
-    public static final byte ACK =0x0A;
-    public static final byte REGISTER_RESPONSE =0x0B;
-    public static final byte SREJ=0x0C;
-
-    public static final int MAXDATASIZE= (48*1024)-(7+4);
-
     public int getTotalSize(){
         int dataSize = PDU.intfromByte(this.getSizebytes());
         return dataSize+4+7;

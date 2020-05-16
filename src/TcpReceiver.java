@@ -1,4 +1,5 @@
 import javax.print.attribute.standard.ReferenceUriSchemesSupported;
+import java.net.DatagramPacket;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -13,16 +14,15 @@ public class TcpReceiver implements Runnable {
     }
 
     /**
-     * Cria um socket (do cliente) para cada conexão efetuada na porta de entrada
+     *
      */
     public void run() {
         try {
-            ServerSocket serverSocket = new ServerSocket(6666);
-            System.out.println("listening...");
             while (true) {
-                Socket socket = serverSocket.accept();
-                // Falta aqui o código que chama o TcpProxy.java
+                Socket s = ss.accept();
+                new Thread(new TcpProxy(s, peers)).start();
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
