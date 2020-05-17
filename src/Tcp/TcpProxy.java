@@ -32,7 +32,7 @@ public class TcpProxy implements Runnable {
 
             InputStream in = s.getInputStream();
             in.read(buf);
-            System.out.println("Linha recebida: " + buf);
+            System.out.println("Linha recebida: " + Arrays.toString(buf));
 
             PDU pacote = PDU.fromBytes(buf);
             byte[] mensagem = PDU.toBytes(pacote);
