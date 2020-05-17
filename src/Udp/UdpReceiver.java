@@ -1,3 +1,5 @@
+package Udp;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
@@ -13,6 +15,9 @@ public class UdpReceiver implements Runnable{
         this.remotePort = remotePort;
     }
 
+    /**
+     * Recebe informação de um Anon e dá início ao processo de comunicação entre anon e servidor
+     */
     public void run(){
         try{
             while (true){
@@ -20,8 +25,7 @@ public class UdpReceiver implements Runnable{
                 socket_udp.receive(packet);
                 PDU pacote = PDU.fromBytes(packet.getData());
 
-                UdpProxy udp_proxy = new UdpProxy(packet.getAddress(),packet.getPort(),remoteIp,remotePort,pacote);
-                new Thread(udp_proxy).start();
+                new Thread(new UdpProxy(packet.getAddress(),packet.getPort(),remoteIp,remotePort,pacote)).start();
             }
         }
         catch (Exception e){

@@ -1,3 +1,7 @@
+package AnonGW;
+
+import Tcp.TcpReceiver;
+import Udp.UdpReceiver;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 
@@ -10,8 +14,8 @@ public class AnonGWWorker implements Runnable{
     private int udpPort;
 
     public AnonGWWorker(String remoteIp, int remotePort, int[] p,int tcpPort, int udpPort) {
-        this.remoteIp = remoteIp;     // localhost
-        this.remotePort = remotePort; // 80
+        this.remoteIp = remoteIp;
+        this.remotePort = remotePort;
         this.peers = p;
         this.tcpPort = tcpPort;
         this.udpPort = udpPort;

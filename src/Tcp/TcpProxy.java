@@ -1,3 +1,5 @@
+package Tcp;
+
 import java.io.*;
 import java.net.*;
 import java.util.Random;
@@ -13,7 +15,7 @@ public class TcpProxy implements Runnable {
     }
 
     /**
-     * Lê do cliente e manda para próximo anon escolhido aleatoriamente
+     * Recebe informação do cliente e manda para próximo anon escolhido aleatoriamente
      */
     @Override
     public void run() {

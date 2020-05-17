@@ -1,5 +1,5 @@
-import javax.print.attribute.standard.ReferenceUriSchemesSupported;
-import java.net.DatagramPacket;
+package Tcp;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -14,7 +14,7 @@ public class TcpReceiver implements Runnable {
     }
 
     /**
-     *
+     * Recebe as conexões TCP e dá início ao processo de comunicação entre cliente e próximo Anon
      */
     public void run() {
         try {
