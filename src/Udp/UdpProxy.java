@@ -1,23 +1,27 @@
 package Udp;
 
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.*;
 import java.util.Arrays;
+import java.util.Map;
 
 public class UdpProxy implements Runnable {
 
     private InetAddress ip_anterior;
     private int porta_anterior;
-    private String remoteIp;
+    private InetAddress remoteIp;
     private int remotePort;
     private PDU pacote;
+    private Map<InetAddress,Socket> tcp_sockets;
 
-    public UdpProxy(InetAddress ip_anterior, int porta_anterior, String remoteIp, int remotePort, PDU pdu) {
+    public UdpProxy(InetAddress ip_anterior, int porta_anterior, InetAddress remoteIp, int remotePort, PDU pacote, Map<InetAddress, Socket> tcp_sockets) {
         this.ip_anterior = ip_anterior;
         this.porta_anterior = porta_anterior;
         this.remoteIp = remoteIp;
         this.remotePort = remotePort;
-        this.pacote = pdu;
+        this.pacote = pacote;
+        this.tcp_sockets = tcp_sockets;
     }
 
     /**
@@ -26,24 +30,32 @@ public class UdpProxy implements Runnable {
     @Override
     public void run() {
         try{
-            DatagramSocket socket_udp = new DatagramSocket(porta_anterior,ip_anterior);
-            Socket tcp_final = new Socket(remoteIp,remotePort);
+            DatagramSocket socket_udp = new DatagramSocket();
+            Socket tcp_final;
 
-            PrintWriter pw = new PrintWriter(tcp_final.getOutputStream());
-            BufferedReader br = new BufferedReader(new InputStreamReader(tcp_final.getInputStream()));
-
-            while(true){
-
-                pw.println(Arrays.toString(PDU.toBytes(pacote)));
-
-                String line = br.readLine();
-                if(line == null)
-                    break;
-
-                byte[] mensagem = line.getBytes();
-                DatagramPacket resposta = new DatagramPacket(mensagem,mensagem.length,ip_anterior,porta_anterior);
-                socket_udp.send(resposta);
+            if(tcp_sockets.containsKey(socket_udp.getLocalAddress())){
+                tcp_final = tcp_sockets.get(socket_udp.getLocalAddress());
             }
+            else{
+                tcp_final = new Socket(remoteIp,remotePort);
+                tcp_sockets.put(socket_udp.getLocalAddress(),tcp_final);
+            }
+
+            InputStream in = tcp_final.getInputStream();
+            OutputStream out = tcp_final.getOutputStream();
+
+            System.out.println("A enviar: " + Arrays.toString(PDU.toBytes(pacote)));
+
+            out.write(pacote.getData());
+            out.flush();
+
+            byte[] mensagem = new byte[4096];
+            in.read(mensagem);
+            System.out.println("Linha recebida: " + Arrays.toString(mensagem));
+
+            PDU pacote = PDU.fromBytes(mensagem);
+            DatagramPacket sender = new DatagramPacket(PDU.toBytes(pacote),PDU.toBytes(pacote).length,remoteIp,remotePort);
+            socket_udp.send(sender);
         }
         catch (Exception e){
             e.printStackTrace();

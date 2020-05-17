@@ -3,46 +3,40 @@ package AnonGW;
 import Tcp.TcpReceiver;
 import Udp.UdpReceiver;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-public class AnonGWWorker implements Runnable{
+public class AnonGWWorker{
 
-    private final String remoteIp;
+    private final InetAddress remoteIp;
     private final int remotePort;
-    private int[] nextPeers;
+    private InetAddress[] nextPeers;
     private int tcpPort;
     private int udpPort;
 
-    public AnonGWWorker(String remoteIp, int remotePort, int[] p,int tcpPort, int udpPort) {
+    public AnonGWWorker(InetAddress remoteIp, int remotePort, InetAddress[] p,int tcpPort, int udpPort) {
         this.remoteIp = remoteIp;
         this.remotePort = remotePort;
-        this.nextPeers = removeElements(p,udpPort);
+        this.nextPeers = p.clone();
         this.tcpPort = tcpPort;
         this.udpPort = udpPort;
     }
-
-    public static int[] removeElements(int[] arr, int key) {
-        int index = 0;
-        for (int i=0; i<arr.length; i++)
-            if (arr[i] != key)
-                arr[index++] = arr[i];
-        return Arrays.copyOf(arr, index);
-    }
-
     /**
      * Cria um socket (do cliente) para cada conexão efetuada na porta de entrada
      */
-    public void run() {
+    public void listen() {
         try {
+            Map<InetAddress, Socket> tcp_sockets = new HashMap<>();
             ServerSocket ss = new ServerSocket(tcpPort);
             DatagramSocket socket_udp = new DatagramSocket(udpPort);
-            System.out.println("listening...");
-            /**
-             * Falta aqui garantir que tiramos o peer que representa esta instância do AnonGW
-             */
-            new Thread(new TcpReceiver(ss,nextPeers)).start();
-            new Thread(new UdpReceiver(socket_udp, remoteIp, remotePort)).start();
+            System.out.println("listening TCP in port: " + tcpPort + " and UDP in port:" + udpPort);
+            System.out.println("UDP listening on port: " + socket_udp.getLocalPort() + " and on address " + socket_udp.getLocalAddress());
+            new Thread(new TcpReceiver(ss,nextPeers,socket_udp.getLocalAddress(),udpPort,tcp_sockets)).start();
+            new Thread(new UdpReceiver(socket_udp, remoteIp, remotePort,tcp_sockets)).start();
         } catch (Exception e) {
             e.printStackTrace();
         }

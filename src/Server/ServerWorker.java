@@ -12,6 +12,9 @@ public class ServerWorker implements Runnable{
         this.s = s;
     }
 
+    /**
+     * TEMPORÁRIO
+     */
     public void run() {
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));

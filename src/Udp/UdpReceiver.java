@@ -2,17 +2,21 @@ package Udp;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.Map;
 
 public class UdpReceiver implements Runnable{
     private DatagramSocket socket_udp;
-    private String remoteIp;
+    private InetAddress remoteIp;
     private int remotePort;
-    private byte[] buf = new byte[4096];
+    private Map<InetAddress, Socket> tcp_sockets;
 
-    public UdpReceiver(DatagramSocket socket_udp, String remoteIp, int remotePort) {
+    public UdpReceiver(DatagramSocket socket_udp, InetAddress remoteIp, int remotePort,Map<InetAddress, Socket> tcp_sockets) {
         this.socket_udp = socket_udp;
         this.remoteIp = remoteIp;
         this.remotePort = remotePort;
+        this.tcp_sockets = tcp_sockets;
     }
 
     /**
@@ -21,11 +25,12 @@ public class UdpReceiver implements Runnable{
     public void run(){
         try{
             while (true){
+                byte[] buf = new byte[4096];
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 socket_udp.receive(packet);
                 PDU pacote = PDU.fromBytes(packet.getData());
 
-                new Thread(new UdpProxy(packet.getAddress(),packet.getPort(),remoteIp,remotePort,pacote)).start();
+                new Thread(new UdpProxy(packet.getAddress(),6666,remoteIp,remotePort,pacote,tcp_sockets)).start();
             }
         }
         catch (Exception e){

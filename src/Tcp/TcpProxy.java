@@ -1,17 +1,22 @@
 package Tcp;
 
+import Udp.PDU;
+
 import java.io.*;
 import java.net.*;
+import java.util.Arrays;
 import java.util.Random;
 
 public class TcpProxy implements Runnable {
 
     private Socket s;
-    private int[] peers;
+    private InetAddress[] peers;
+    private int port;
 
-    public TcpProxy(Socket s, int[] peers) {
+    public TcpProxy(Socket s, InetAddress[] peers, int port) {
         this.s = s;
         this.peers = peers;
+        this.port = port;
     }
 
     /**
@@ -20,19 +25,20 @@ public class TcpProxy implements Runnable {
     @Override
     public void run() {
         try{
+            byte[] buf = new byte[4096];
             int rnd = new Random().nextInt(peers.length);
-            DatagramSocket socket_udp = new DatagramSocket(peers[rnd], InetAddress.getLocalHost());
+            System.out.println("List of peers = " + Arrays.toString(peers) + ", however " + peers[rnd] + " was the chosen one.");
+            DatagramSocket socket_udp = new DatagramSocket();
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            while(true){
-                String line = br.readLine();
-                if(line == null)
-                    break;
+            InputStream in = s.getInputStream();
+            in.read(buf);
+            System.out.println("Linha recebida: " + buf);
 
-                byte[] mensagem = line.getBytes();
-                DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,InetAddress.getLocalHost(),peers[rnd]);
-                socket_udp.send(sender);
-            }
+            PDU pacote = PDU.fromBytes(buf);
+            byte[] mensagem = PDU.toBytes(pacote);
+
+            DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,peers[rnd],port);
+            socket_udp.send(sender);
         }
         catch (Exception e){
             e.printStackTrace();

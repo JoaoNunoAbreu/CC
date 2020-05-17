@@ -8,7 +8,7 @@ import java.net.Socket;
 public class Cliente {
     public static void main(String[] args) throws Exception {
         /**
-         * Recebe o IP e a porta ao qual se quer ligar
+         * TEMPORÁRIO
          */
         if(args.length != 2){
             System.out.println("Número de argumentos inválidos!");
