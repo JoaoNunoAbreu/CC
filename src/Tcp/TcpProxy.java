@@ -25,7 +25,7 @@ public class TcpProxy implements Runnable {
     @Override
     public void run() {
         try{
-            byte[] buf = new byte[4096];
+            byte[] buf = new byte[1480];
             int rnd = new Random().nextInt(peers.length);
             System.out.println("List of peers = " + Arrays.toString(peers) + ", however " + peers[rnd] + " was the chosen one.");
             DatagramSocket socket_udp = new DatagramSocket();
