@@ -31,8 +31,8 @@ public class TcpProxy implements Runnable {
             DatagramSocket socket_udp = new DatagramSocket();
 
             InputStream in = s.getInputStream();
-            in.read(buf);
-            System.out.println("Linha recebida: " + Arrays.toString(buf));
+            int size = in.read(buf);
+            System.out.println("Linha recebida do cliente: " + Arrays.toString(buf) + " com tamanho = " + size);
 
             PDU pacote = PDU.fromBytes(buf);
             byte[] mensagem = PDU.toBytes(pacote);
