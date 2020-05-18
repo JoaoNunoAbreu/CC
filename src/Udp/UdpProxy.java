@@ -51,13 +51,11 @@ public class UdpProxy implements Runnable {
 
             byte[] mensagem = new byte[1024];
             int size = in.read(mensagem);
-            byte[] shorten_buf = new byte[size];
-            System.arraycopy(mensagem, 0, shorten_buf, 0, size);
-            System.out.println("Linha recebida: " + Arrays.toString(shorten_buf));
 
-            PDU pacote_sender = new PDU();
-            pacote_sender.setFileData(shorten_buf);
-            DatagramPacket sender = new DatagramPacket(pacote_sender.getFileData(),pacote_sender.getFileData().length,ip_anterior,porta_anterior);
+            System.out.println("Linha recebida: " + Arrays.toString(mensagem));
+
+            PDU pacote_sender = new PDU(mensagem,size);
+            DatagramPacket sender = new DatagramPacket(pacote_sender.toBytes(),pacote_sender.toBytes().length,ip_anterior,porta_anterior);
             socket_udp.send(sender);
         }
         catch (Exception e){

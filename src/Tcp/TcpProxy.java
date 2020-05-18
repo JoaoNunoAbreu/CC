@@ -34,16 +34,14 @@ public class TcpProxy implements Runnable {
             InputStream in = s.getInputStream();
             int size = in.read(buf);
             System.out.println("Linha recebida do cliente: " + Arrays.toString(buf) + " com tamanho = " + size);
-            byte[] shorten_buf = new byte[size];
-            System.arraycopy(buf, 0, shorten_buf, 0, size);
-            System.out.println("Aqui vai buffer com tamanho = " + shorten_buf.length);
-            PDU pacote = new PDU();
-            pacote.setFileData(shorten_buf);
-            byte[] mensagem = pacote.getFileData();
+
+            PDU pacote = new PDU(buf,size);
+            byte[] mensagem = pacote.toBytes();
 
             System.out.println("Mensagem a enviar para próximo anon: " + Arrays.toString(mensagem));
             DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,peers[rnd],port);
             socket_udp.send(sender);
+            Arrays.fill(buf,(byte)0);
         }
         catch (Exception e){
             e.printStackTrace();
