@@ -64,8 +64,7 @@ public class PDU {
     }
 
     static public int intfromByte(byte[] sizebytes){
-        ByteBuffer wrapped = ByteBuffer.wrap(sizebytes);
-        return wrapped.getInt();
+        return ByteBuffer.wrap(Arrays.copyOfRange(sizebytes, 0, 4)).getInt();
     }
 
     static public byte[] bytefromInt(int integer){
