@@ -4,6 +4,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Map;
 
 public class UdpReceiver implements Runnable{
@@ -28,8 +29,12 @@ public class UdpReceiver implements Runnable{
                 byte[] buf = new byte[1024];
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 socket_udp.receive(packet);
+
                 PDU pacote = new PDU();
-                pacote.setFileData(packet.getData());
+                byte[] shorten_buf = new byte[packet.getLength()];
+                System.arraycopy(packet.getData(), 0, shorten_buf, 0, packet.getLength());
+                System.out.println("Linha recebida: " + Arrays.toString(shorten_buf));
+                pacote.setFileData(shorten_buf);
 
                 new Thread(new UdpProxy(packet.getAddress(),6666,remoteIp,remotePort,pacote,tcp_sockets)).start();
             }
