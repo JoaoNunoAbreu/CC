@@ -94,6 +94,7 @@ public class PDU {
         }
         // apartirn do byte[ calcular  o tamanho
         int tamanho  = intfromByte(sizebytes);
+        System.out.println("Tamanho = " + tamanho);
         byte[] datai = new byte[tamanho];
         for (int i = 0; i < tamanho; i++) {
             datai[i]=data[objpos++];
