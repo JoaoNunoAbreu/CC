@@ -35,9 +35,7 @@ public class TcpProxy implements Runnable {
             int size = in.read(buf);
             System.out.println("Linha recebida do cliente: " + Arrays.toString(buf) + " com tamanho = " + size);
             byte[] shorten_buf = new byte[size];
-            for(int i = 0; i < size; i++){
-                shorten_buf[i] = buf[i];
-            }
+            System.arraycopy(buf, 0, shorten_buf, 0, size);
             System.out.println("Aqui vai buffer com tamanho = " + shorten_buf.length);
             PDU pacote = new PDU();
             pacote.setFileData(shorten_buf);

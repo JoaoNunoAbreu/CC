@@ -80,7 +80,7 @@ public class PDU {
     public void setChecksum(long checksum) {
         this.checksum = checksum;
     }
-    
+
     /* A SER ALTERADO MAIS TARDE PARA USAR O LENGTH DATA*/
     public byte[] getFileData() {
         return Arrays.copyOf(this.fileData, fileData.length);
