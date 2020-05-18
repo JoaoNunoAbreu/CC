@@ -44,7 +44,7 @@ public class UdpProxy implements Runnable {
             InputStream in = tcp_final.getInputStream();
             OutputStream out = tcp_final.getOutputStream();
 
-            System.out.println("A enviar: " + Arrays.toString(pacote.getFileData()));
+            System.out.println("A enviar: " + Arrays.toString(pacote.toBytes()));
 
             out.write(pacote.getFileData());
             out.flush();
