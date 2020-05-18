@@ -49,7 +49,7 @@ public class UdpProxy implements Runnable {
             out.write(pacote.getData());
             out.flush();
 
-            byte[] mensagem = new byte[1480];
+            byte[] mensagem = new byte[1024];
             in.read(mensagem);
             System.out.println("Linha recebida: " + Arrays.toString(mensagem));
 
