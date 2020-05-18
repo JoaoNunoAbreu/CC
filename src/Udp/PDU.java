@@ -80,12 +80,13 @@ public class PDU {
     public void setChecksum(long checksum) {
         this.checksum = checksum;
     }
-
+    
+    /* A SER ALTERADO MAIS TARDE PARA USAR O LENGTH DATA*/
     public byte[] getFileData() {
-        return Arrays.copyOf(this.fileData, this.lengthData);
+        return Arrays.copyOf(this.fileData, fileData.length);
     }
 
-    /* A SER ALTERADO MAIS TARDE PARA USAR O LENGTH DATA*/
+
     public void setFileData(byte[] fileData) {
         this.fileData = Arrays.copyOf(fileData, fileData.length);
     }
