@@ -54,6 +54,7 @@ public class UdpProxy implements Runnable {
 
             System.out.println("Linha recebida de tcp: " + Arrays.toString(mensagem));
 
+            System.out.println("A enviar para " + ip_anterior.getHostName() + ":" + porta_anterior);
             PDU pacote_sender = new PDU(mensagem,size);
             DatagramPacket sender = new DatagramPacket(pacote_sender.toBytes(),pacote_sender.toBytes().length,ip_anterior,porta_anterior);
             socket_udp.send(sender);
