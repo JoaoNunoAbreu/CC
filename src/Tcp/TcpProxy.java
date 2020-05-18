@@ -4,6 +4,7 @@ import Udp.PDU;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -42,6 +43,7 @@ public class TcpProxy implements Runnable {
             pacote.setFileData(shorten_buf);
             byte[] mensagem = pacote.getFileData();
 
+            System.out.println("Mensagem a enviar para próximo anon: " + Arrays.toString(mensagem));
             DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,peers[rnd],port);
             socket_udp.send(sender);
         }
