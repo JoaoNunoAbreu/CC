@@ -85,8 +85,9 @@ public class PDU {
         return Arrays.copyOf(this.fileData, this.lengthData);
     }
 
+    /* A SER ALTERADO MAIS TARDE PARA USAR O LENGTH DATA*/
     public void setFileData(byte[] fileData) {
-        this.fileData = Arrays.copyOf(fileData, this.lengthData);
+        this.fileData = Arrays.copyOf(fileData, fileData.length);
     }
 
     public byte[] PDUToByte() {
