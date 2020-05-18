@@ -38,8 +38,9 @@ public class TcpProxy implements Runnable {
                 shorten_buf[i] = buf[i];
             }
             System.out.println("Aqui vai buffer com tamanho = " + shorten_buf.length);
-            PDU pacote = PDU.fromBytes(shorten_buf);
-            byte[] mensagem = PDU.toBytes(pacote);
+            PDU pacote = new PDU();
+            pacote.setFileData(shorten_buf);
+            byte[] mensagem = pacote.getFileData();
 
             DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,peers[rnd],port);
             socket_udp.send(sender);

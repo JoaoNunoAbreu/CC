@@ -28,7 +28,8 @@ public class UdpReceiver implements Runnable{
                 byte[] buf = new byte[4096];
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 socket_udp.receive(packet);
-                PDU pacote = PDU.fromBytes(packet.getData());
+                PDU pacote = new PDU();
+                pacote.setFileData(packet.getData());
 
                 new Thread(new UdpProxy(packet.getAddress(),6666,remoteIp,remotePort,pacote,tcp_sockets)).start();
             }
