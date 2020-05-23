@@ -86,25 +86,27 @@ public class UdpProxy implements Runnable {
                     System.out.println("Não resposta: (IPHost -> IPTarget) ------> (" + pacote.getTarget_response() + " -> " + remoteIp + ")");
 
                 Collections.sort(pdu.get(l));
-
+                int total = 0;
                 /* Decifrar cada PDU da ligação que foi establecida */
                 for (PDU sender : pdu.get(l)) {
                     System.out.println("sender.getFileData() = " + Arrays.toString(sender.getFileData()) + ", Tamanho do sender.getFileData(): " + sender.getFileData().length);
                     byte[] dados_decifrados = decriptCipher.doFinal(sender.getFileData());
+                    total += dados_decifrados.length;
                     out.write(dados_decifrados);
                     out.flush();
                     System.out.println("Estou na decifração do pdu");
                 }
                 pdu.get(l).clear();
+                System.out.println("Sending a total of " + total + " to the target.");
             }
 
             byte[] info = new byte[2048];
             int size, seqNumber = 0;
-
+            int total = 0;
             while((size = in.read(info)) != -1){
-
+                total += size;
                 //info = Arrays.copyOfRange(info, 0, size);
-
+                System.out.println("Sent packet " + seqNumber + " -> " + size);
                 byte[] dados_encriptados = encriptCipher.doFinal(Arrays.copyOfRange(info, 0, size));
                 PDU pacote_sender = new PDU(dados_encriptados,dados_encriptados.length);
                 pacote_sender.setTarget_response(pacote.getTarget_response());
