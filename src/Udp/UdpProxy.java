@@ -59,7 +59,6 @@ public class UdpProxy implements Runnable {
             /* Ligação TCP */
             InputStream in = tcp_final.getInputStream();
             OutputStream out = tcp_final.getOutputStream();
-            System.out.println("A enviar através de tcp: " + Arrays.toString(pacote.toBytes()));
 
             pdu.get(l).add(pacote.clone());
 
@@ -81,8 +80,7 @@ public class UdpProxy implements Runnable {
 
             byte[] info = new byte[2048];
             int seqNumber = 0;
-            int size, total_size = 0;
-            while((size = in.read(info)) != -1){
+            while(in.read(info) != -1){
                 byte[] dados_encriptados = AESencrp.encrypt(info);
                 PDU pacote_sender = new PDU(dados_encriptados,dados_encriptados.length);
                 pacote_sender.setTarget_response(pacote.getTarget_response());
@@ -95,7 +93,6 @@ public class UdpProxy implements Runnable {
                 socket_udp.send(sender);
                 System.out.println("Estou a ler do socket: " + tcp_final.getInetAddress());
                 seqNumber++;
-                total_size += size;
             }
             socket_udp.close();
         }
