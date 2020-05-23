@@ -62,8 +62,8 @@ public class UdpProxy implements Runnable {
             System.out.println("A enviar através de tcp: " + Arrays.toString(pacote.toBytes()));
 
             if(isResposta == 1)
-                System.out.println("(IPHost -> IPTarget) ------> (" + remoteIp + " -> " + pacote.getTarget_response() + ")");
-            else System.out.println("(IPHost -> IPTarget) ------> (" + pacote.getTarget_response() + " -> " + remoteIp + ")");
+                System.out.println("Resposta: (IPHost -> IPTarget) ------> (" + remoteIp + " -> " + pacote.getTarget_response() + ")");
+            else System.out.println("Não resposta: (IPHost -> IPTarget) ------> (" + pacote.getTarget_response() + " -> " + remoteIp + ")");
 
             Collections.sort(pdu.get(l));
 
