@@ -38,7 +38,7 @@ public class TcpReceiver implements Runnable {
                 Socket s = ss.accept();
                 Ligacao l = new Ligacao(s.getInetAddress(),ipTarget);
 
-                if(tcp_sockets.containsKey(l)) tcp_sockets.remove(l);
+                tcp_sockets.remove(l);
                 tcp_sockets.put(l,s);
                 pdu.put(l,new ArrayList<PDU>());
 
