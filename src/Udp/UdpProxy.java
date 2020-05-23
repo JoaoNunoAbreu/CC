@@ -82,8 +82,12 @@ public class UdpProxy implements Runnable {
             pdu.get(l).clear();
 
             byte[] info = new byte[2048];
-            int seqNumber = 0;
-            while(in.read(info) != -1){
+            int size, seqNumber = 0;
+
+            while((size = in.read(info)) != -1){
+
+                info = Arrays.copyOfRange(info, 0, size);
+
                 byte[] dados_encriptados = AESencrp.encrypt(info);
                 PDU pacote_sender = new PDU(dados_encriptados,dados_encriptados.length);
                 pacote_sender.setTarget_response(pacote.getTarget_response());
