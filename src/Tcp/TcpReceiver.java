@@ -1,24 +1,31 @@
 package Tcp;
 
+import AnonGW.Ligacao;
+import Udp.PDU;
+
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 public class TcpReceiver implements Runnable {
 
     private ServerSocket ss;
     private InetAddress[] peers;
-    private InetAddress ip_local;
+    private InetAddress ipTarget;
     private int port;
-    private Map<InetAddress,Socket> tcp_sockets;
+    private Map<Ligacao,Socket> tcp_sockets;
+    private Hashtable<Ligacao, List<PDU>> pdu;
 
-    public TcpReceiver(ServerSocket ss, InetAddress[] peers, InetAddress ip_local, int port, Map<InetAddress, Socket> tcp_sockets) {
+    public TcpReceiver(ServerSocket ss, InetAddress[] peers, InetAddress ipTarget, int port, Map<Ligacao, Socket> tcp_sockets, Hashtable<Ligacao, List<PDU>> pdu) {
         this.ss = ss;
         this.peers = peers;
-        this.ip_local = ip_local;
+        this.ipTarget = ipTarget;
         this.port = port;
         this.tcp_sockets = tcp_sockets;
+        this.pdu = pdu;
     }
 
     /**
@@ -28,7 +35,13 @@ public class TcpReceiver implements Runnable {
         try {
             while (true) {
                 Socket s = ss.accept();
-                tcp_sockets.put(ip_local,s);
+                Ligacao l = new Ligacao(s.getInetAddress(),ipTarget);
+
+                if(tcp_sockets.containsKey(l))
+                    tcp_sockets.replace(l,s);
+                else
+                    tcp_sockets.put(l,s);
+
                 new Thread(new TcpProxy(s,peers,port)).start();
             }
         }

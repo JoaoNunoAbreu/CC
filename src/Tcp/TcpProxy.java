@@ -1,5 +1,6 @@
 package Tcp;
 
+import Encryption.AESencrp;
 import Udp.PDU;
 
 import java.io.*;
@@ -30,16 +31,24 @@ public class TcpProxy implements Runnable {
             System.out.println("List of peers = " + Arrays.toString(peers) + ", however " + peers[rnd] + " was the chosen one.");
             DatagramSocket socket_udp = new DatagramSocket();
 
+            /* À espera de dados do socket */
             InputStream in = s.getInputStream();
             int size = in.read(buf);
             System.out.println("Linha recebida do cliente: " + Arrays.toString(buf) + " com tamanho = " + size);
 
-            PDU pacote = new PDU(buf,size);
-            byte[] mensagem = pacote.toBytes();
+            /* Encriptação */
+            byte[] dados_encriptados = AESencrp.encrypt(buf);
 
+            /* Criação do PDU */
+            PDU pacote = new PDU(dados_encriptados,dados_encriptados.length);
+            pacote.setTarget_response(s.getInetAddress().getHostName());
+
+            /* Envio do PDU */
+            byte[] mensagem = pacote.toBytes();
             System.out.println("Mensagem a enviar para próximo anon: " + Arrays.toString(mensagem));
             DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,peers[rnd],port);
             socket_udp.send(sender);
+
             Arrays.fill(buf,(byte)0);
         }
         catch (Exception e){
