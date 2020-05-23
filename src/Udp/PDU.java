@@ -73,13 +73,13 @@ public class PDU implements Comparable<PDU>{
         packet.put(ByteBuffer.allocate(4).putInt(this.seqNumber).array());
         packet.put(ByteBuffer.allocate(4).putInt(this.isResposta).array());
         packet.put(ByteBuffer.allocate(4).putInt(this.isLast).array());
-        packet.put(utf8_host);
+        packet.put(utf8_host); // sempre 8 bytes
         packet.put(this.fileData);
 
         return packet.array();
     }
 
-    public void fromBytes(byte[] pdu, int length){ // length = 2060
+    public void fromBytes(byte[] pdu, int length){
         seqNumber = ByteBuffer.wrap(Arrays.copyOfRange(pdu, 0, 4)).getInt();
         isResposta = ByteBuffer.wrap(Arrays.copyOfRange(pdu, 4, 8)).getInt();
         isLast = ByteBuffer.wrap(Arrays.copyOfRange(pdu, 8, 12)).getInt();

@@ -27,6 +27,7 @@ public class UdpReceiver implements Runnable{
 
     public void run(){
         try{
+            PDU pacote = new PDU();
             while (true){
                 byte[] buf = new byte[2068];
                 /* Recebe um pacote através de uma ligação UDP */
@@ -34,7 +35,6 @@ public class UdpReceiver implements Runnable{
                 socket_udp.receive(packet);
 
                 /* Cria e preenche um PDU */
-                PDU pacote = new PDU();
                 pacote.fromBytes(packet.getData(),packet.getLength());
                 System.out.println("pacote.getFileData() = " + Arrays.toString(pacote.getFileData()));
 
