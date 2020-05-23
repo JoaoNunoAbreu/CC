@@ -3,6 +3,9 @@ package Udp;
 import AnonGW.Ligacao;
 import Encryption.AESencrp;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -36,10 +39,14 @@ public class UdpProxy implements Runnable {
             DatagramSocket socket_udp = new DatagramSocket();
             Socket tcp_final;
             Ligacao l;
+            SecretKey secretKey;
+            Cipher decriptCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+            Cipher encriptCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
             int isResposta = pacote.getIsResposta();
 
             /* Já obteve resposta do servidor, está a voltar para trás */
-            if(isResposta == 1){
+            // FIXME
+            if(isResposta > 0){
                 l = new Ligacao(InetAddress.getByName(pacote.getTarget_response()),remoteIp);
                 tcp_final = tcp_sockets.get(l);
             }
@@ -65,6 +72,13 @@ public class UdpProxy implements Runnable {
                 return ;
             }
             else {
+                byte[] key = pacote.getFileData();
+                System.out.println("Key used: " + Arrays.toString(key));
+                secretKey = new SecretKeySpec(key, 0, key.length, "DES");
+
+                /* Init the cypher */
+                decriptCipher.init(Cipher.DECRYPT_MODE, secretKey);
+                encriptCipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
                 if (isResposta == 1)
                     System.out.println("Resposta: (IPHost -> IPTarget) ------> (" + remoteIp + " -> " + pacote.getTarget_response() + ")");
@@ -111,15 +125,16 @@ public class UdpProxy implements Runnable {
 
             if(seqNumber > 0) {
                 /* Send the terminating packet if any packets got send at all */
-                PDU last = new PDU("final".getBytes(),5);
+                PDU last = new PDU(secretKey.getEncoded(),secretKey.getEncoded().length);
                 last.setTarget_response(pacote.getTarget_response());
                 last.setIsResposta(1);
                 last.setIsLast(1);
                 last.setSeqNumber(seqNumber);
 
                 /* Send it to the other AnonGW */
-                DatagramPacket send = new DatagramPacket(last.toBytes(), last.toBytes().length, ip_anterior, porta_anterior);
+                DatagramPacket send = new DatagramPacket(last.toBytes(), last.toBytes().length, remoteIp, remotePort);
                 socket_udp.send(send);
+                System.out.println("SENT LAST PACKET");
             }
 
             socket_udp.close();

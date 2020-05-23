@@ -3,6 +3,7 @@ package Tcp;
 import Encryption.AESencrp;
 import Udp.PDU;
 
+import javax.crypto.Cipher;
 import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.*;
@@ -14,11 +15,15 @@ public class TcpProxy implements Runnable {
     private Socket s;
     private InetAddress[] peers;
     private int port;
+    private byte[] encodedKey;
+    private Cipher cipher;
 
-    public TcpProxy(Socket s, InetAddress[] peers, int port) {
+    public TcpProxy(Socket s, InetAddress[] peers, int port, byte[] encodedKey, Cipher cipher) {
         this.s = s;
         this.peers = peers;
         this.port = port;
+        this.encodedKey = encodedKey;
+        this.cipher = cipher;
     }
 
     /**
@@ -56,11 +61,11 @@ public class TcpProxy implements Runnable {
             Thread.sleep(100);
 
             /* Envio do pacote final */
-            PDU last = new PDU("final".getBytes(),5);
+            PDU last = new PDU(encodedKey,encodedKey.length);
             last.setIsLast(1);
             last.setTarget_response(s.getInetAddress().getHostName());
-            DatagramPacket last_pacote = new DatagramPacket(last.toBytes(),last.toBytes().length,peers[rnd],port);
-            socket_udp.send(last_pacote);
+            DatagramPacket last_packet = new DatagramPacket(last.toBytes(), last.toBytes().length, peers[rnd], port);
+            socket_udp.send(last_packet);
 
             Arrays.fill(buf,(byte)0);
         }

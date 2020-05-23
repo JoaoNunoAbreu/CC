@@ -3,13 +3,13 @@ package Tcp;
 import AnonGW.Ligacao;
 import Udp.PDU;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TcpReceiver implements Runnable {
 
@@ -41,7 +41,19 @@ public class TcpReceiver implements Runnable {
                 if(tcp_sockets.containsKey(l)) tcp_sockets.remove(l);
                 tcp_sockets.put(l,s);
                 pdu.put(l,new ArrayList<PDU>());
-                new Thread(new TcpProxy(s,peers,port)).start();
+
+                /* Generate key */
+                KeyGenerator keygenerator = KeyGenerator.getInstance("DES");
+                SecretKey chaveDES = keygenerator.generateKey();
+                System.out.println("Key used: " + Arrays.toString(chaveDES.getEncoded()));
+
+                /* Create the cypher */
+                Cipher cifraDES = Cipher.getInstance("DES/ECB/PKCS5Padding");
+
+                /* Init the cypher */
+                cifraDES.init(Cipher.ENCRYPT_MODE, chaveDES);
+
+                new Thread(new TcpProxy(s,peers,port,chaveDES.getEncoded(), cifraDES)).start();
             }
         }
         catch (Exception e) {
