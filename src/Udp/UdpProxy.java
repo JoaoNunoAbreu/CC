@@ -94,6 +94,7 @@ public class UdpProxy implements Runnable {
                 seqNumber++;
                 total_size += size;
             }
+            pdu.get(l).add(pacote.clone());
             socket_udp.close();
         }
         catch (Exception e){
