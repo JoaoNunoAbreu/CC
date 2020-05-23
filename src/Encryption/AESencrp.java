@@ -1,28 +1,30 @@
 package Encryption;
 
-import javax.crypto.spec.SecretKeySpec;
-import javax.crypto.spec.IvParameterSpec;
-
 import javax.crypto.Cipher;
-import java.nio.charset.StandardCharsets;
+import java.security.*;
+import javax.crypto.spec.SecretKeySpec;
 
 public class AESencrp {
 
-    static String IV = "AAAAAAAAAAAAAAAA";
-    static String chaveencriptacao = "0123456789abcdef";
+    private static final String ALGO = "AES";
+    private static final byte[] keyValue = new byte[] { 'T', 'h', 'e', 'B', 'e', 's', 't','S', 'e', 'c', 'r','e', 't', 'K', 'e', 'y' };
 
-    public static byte[] encrypt(byte[] data) throws Exception {
-        Cipher encripta = Cipher.getInstance("AES/CBC/PKCS5Padding", "SunJCE");
-        SecretKeySpec key = new SecretKeySpec(chaveencriptacao.getBytes(StandardCharsets.UTF_8), "AES");
-        encripta.init(Cipher.ENCRYPT_MODE, key,new IvParameterSpec(IV.getBytes(StandardCharsets.UTF_8)));
-        return encripta.doFinal(data);
+    public static byte[] encrypt(byte[] Data) throws Exception {
+        Key key = generateKey();
+        Cipher c = Cipher.getInstance(ALGO);
+        c.init(Cipher.ENCRYPT_MODE, key);
+        return c.doFinal(Data);
     }
 
-    public static byte[] decrypt(byte[] textoencriptado) throws Exception{
-        Cipher decripta = Cipher.getInstance("AES/CBC/PKCS5Padding", "SunJCE");
-        SecretKeySpec key = new SecretKeySpec(chaveencriptacao.getBytes(StandardCharsets.UTF_8), "AES");
-        decripta.init(Cipher.DECRYPT_MODE, key,new IvParameterSpec(IV.getBytes(StandardCharsets.UTF_8)));
-        return decripta.doFinal(textoencriptado);
+    public static byte[] decrypt(byte[] encryptedData) throws Exception {
+        Key key = generateKey();
+        Cipher c = Cipher.getInstance(ALGO);
+        c.init(Cipher.DECRYPT_MODE, key);
+
+        return c.doFinal(encryptedData);
     }
 
+    private static Key generateKey() throws Exception {
+        return new SecretKeySpec(keyValue, ALGO);
+    }
 }
