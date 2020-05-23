@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ public class UdpReceiver implements Runnable{
                 /* Cria e preenche um PDU */
                 PDU pacote = new PDU();
                 pacote.fromBytes(packet.getData(),packet.getLength());
+                System.out.println("pacote.getFileData() = " + Arrays.toString(pacote.getFileData()));
 
                 /* Tratamento do PDU */
                 new Thread(new UdpProxy(packet.getAddress(),6666,remoteIp,remotePort,pacote,tcp_sockets,pdu)).start();
