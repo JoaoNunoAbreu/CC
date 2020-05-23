@@ -68,6 +68,9 @@ public class UdpProxy implements Runnable {
 
             Collections.sort(pdu.get(l));
 
+
+            if(isResposta == 1)
+                System.out.println("Lista :" + pdu.get(l).size());
             /* Decifrar cada PDU da ligação que foi establecida */
             for(PDU sender: pdu.get(l)){
                 System.out.println("sender.getFileData() = " + Arrays.toString(sender.getFileData()) + ", Tamanho do sender.getFileData(): " + sender.getFileData().length);
