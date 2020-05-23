@@ -7,9 +7,6 @@ JC = javac
 CLASSES = \
 		AnonGW/AnonGW.java \
 		AnonGW/AnonGWWorker.java \
-		Client/Cliente.java \
-		Server/Server.java \
-		Server/ServerWorker.java \
 		Tcp/TcpProxy.java \
 		Tcp/TcpReceiver.java \
 		Udp/PDU.java \
