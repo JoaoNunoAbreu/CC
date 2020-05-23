@@ -6,7 +6,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class AESencrp {
 
-    private static final String ALGO = "AES";
+    private static final String ALGO = "AES/ECB/PKCS5Padding";
     private static final byte[] keyValue = new byte[] { 'T', 'h', 'e', 'B', 'e', 's', 't','S', 'e', 'c', 'r','e', 't', 'K', 'e', 'y' };
 
     public static byte[] encrypt(byte[] Data) throws Exception {
@@ -25,6 +25,6 @@ public class AESencrp {
     }
 
     private static Key generateKey() throws Exception {
-        return new SecretKeySpec(keyValue, 0, 16, "AES");
+        return new SecretKeySpec(keyValue, ALGO);
     }
 }
