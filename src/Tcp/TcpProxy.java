@@ -37,7 +37,7 @@ public class TcpProxy implements Runnable {
             System.out.println("Linha recebida do cliente: " + Arrays.toString(buf) + " com tamanho = " + size);
 
             /* Encriptação */
-            byte[] dados_encriptados = AESencrp.encryptData("pass", buf);
+            byte[] dados_encriptados = AESencrp.encrypt(buf);
 
             /* Criação do PDU */
             PDU pacote = new PDU(dados_encriptados,dados_encriptados.length);
