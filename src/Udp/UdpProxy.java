@@ -87,7 +87,7 @@ public class UdpProxy implements Runnable {
                 /* Envia para o próximo Anon */
 
                 byte[] mensagem = pacote_sender.toBytes();
-                DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,remoteIp,remotePort);
+                DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,ip_anterior,porta_anterior);
                 socket_udp.send(sender);
 
                 seqNumber++;
