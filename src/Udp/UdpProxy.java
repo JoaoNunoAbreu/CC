@@ -72,6 +72,7 @@ public class UdpProxy implements Runnable {
                 byte[] dados_decifrados = AESencrp.decrypt(sender.getFileData());
                 out.write(dados_decifrados);
                 out.flush();
+                System.out.println("Estou na decifração do pdu");
             }
             pdu.get(l).clear();
 
@@ -89,10 +90,11 @@ public class UdpProxy implements Runnable {
                 byte[] mensagem = pacote_sender.toBytes();
                 DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,ip_anterior,porta_anterior);
                 socket_udp.send(sender);
-
+                System.out.println("Estou a ler do socket: " + tcp_final.getInetAddress());
                 seqNumber++;
                 total_size += size;
             }
+            socket_udp.close();
         }
         catch (Exception e){
             e.printStackTrace();
