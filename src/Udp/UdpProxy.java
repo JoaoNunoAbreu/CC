@@ -61,6 +61,8 @@ public class UdpProxy implements Runnable {
             OutputStream out = tcp_final.getOutputStream();
             System.out.println("A enviar através de tcp: " + Arrays.toString(pacote.toBytes()));
 
+            pdu.get(l).add(pacote.clone());
+
             if(isResposta == 1)
                 System.out.println("Resposta: (IPHost -> IPTarget) ------> (" + remoteIp + " -> " + pacote.getTarget_response() + ")");
             else System.out.println("Não resposta: (IPHost -> IPTarget) ------> (" + pacote.getTarget_response() + " -> " + remoteIp + ")");
@@ -94,7 +96,6 @@ public class UdpProxy implements Runnable {
                 seqNumber++;
                 total_size += size;
             }
-            pdu.get(l).add(pacote.clone());
             socket_udp.close();
         }
         catch (Exception e){
