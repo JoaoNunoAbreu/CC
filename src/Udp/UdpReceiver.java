@@ -36,7 +36,7 @@ public class UdpReceiver implements Runnable{
                 socket_udp.receive(packet);
 
                 /* Cria e preenche um PDU */
-                PDU pacote = new PDU(packet.getLength());
+                PDU pacote = new PDU();
                 pacote.fromBytes(packet.getData(),packet.getLength());
 
                 /* Tratamento do PDU */

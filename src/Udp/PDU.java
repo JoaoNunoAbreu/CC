@@ -14,12 +14,12 @@ public class PDU implements Comparable<PDU>{
 
     /* ---------------------------------- Construtores ---------------------------------- */
 
-    public PDU(int size) {
+    public PDU() {
         this.seqNumber = 0;
         this.isResposta = 0;
         this.ultimo = 0;
         this.target_response = "";
-        this.fileData = new byte[size];
+        this.fileData = new byte[2048];
     }
 
     public PDU(byte[] data, int size) {
