@@ -38,6 +38,7 @@ public class TcpProxy implements Runnable {
 
             /* Encriptação */
             byte[] dados_encriptados = AESencrp.encrypt(buf);
+            System.out.println("TCPProxy: dados_encriptados.length = " + dados_encriptados.length);
 
             /* Criação do PDU */
             PDU pacote = new PDU(dados_encriptados,dados_encriptados.length);

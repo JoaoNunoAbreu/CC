@@ -8,7 +8,6 @@ public class PDU implements Comparable<PDU>{
 
     private int seqNumber;
     private int isResposta;
-    private int ultimo;
     private String target_response;
     private byte[] fileData;
 
@@ -68,9 +67,8 @@ public class PDU implements Comparable<PDU>{
 
     public byte[] toBytes() {
         byte[] utf8_host = this.target_response.getBytes(StandardCharsets.UTF_8);
-        ByteBuffer packet = ByteBuffer.allocate(16 + this.target_response.getBytes().length + this.fileData.length);
+        ByteBuffer packet = ByteBuffer.allocate(12 + this.target_response.getBytes().length + this.fileData.length);
         packet.put(ByteBuffer.allocate(4).putInt(this.seqNumber).array());
-        packet.put(ByteBuffer.allocate(4).putInt(this.ultimo).array());
         packet.put(ByteBuffer.allocate(4).putInt(this.isResposta).array());
         packet.put(ByteBuffer.allocate(4).putInt(utf8_host.length).array());
         packet.put(utf8_host);
