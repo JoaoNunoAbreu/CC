@@ -42,10 +42,10 @@ public class TcpProxy implements Runnable {
             int size = in.read(buf);
             System.out.println("Linha recebida do cliente: " + Arrays.toString(buf) + " com tamanho = " + size);
 
-            buf = Arrays.copyOfRange(buf, 0, size);
+            //buf = Arrays.copyOfRange(buf, 0, size);
 
             /* Encriptação */
-            byte[] dados_encriptados = AESencrp.encrypt(buf);
+            byte[] dados_encriptados = cipher.doFinal(Arrays.copyOfRange(buf, 0, size));
             System.out.println("TCPProxy: dados_encriptados.length = " + dados_encriptados.length);
 
             /* Criação do PDU */
