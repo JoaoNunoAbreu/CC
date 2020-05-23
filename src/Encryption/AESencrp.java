@@ -25,6 +25,9 @@ public class AESencrp {
     }
 
     private static Key generateKey() throws Exception {
-        return new SecretKeySpec(keyValue, ALGO);
+        MessageDigest digest = MessageDigest.getInstance("SHA");
+        String passphrase = "blahbl blahbla blah";
+        digest.update(passphrase.getBytes());
+        return new SecretKeySpec(digest.digest(), 0, 16, "AES");
     }
 }
