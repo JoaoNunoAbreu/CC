@@ -25,6 +25,7 @@ public class AESencrp {
     }
 
     private static Key generateKey() throws Exception {
-        return new SecretKeySpec(keyValue, ALGO);
+        Key key = new SecretKeySpec(keyValue, "AES");
+        return key;
     }
 }
