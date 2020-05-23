@@ -27,7 +27,7 @@ public class UdpReceiver implements Runnable{
     public void run(){
         try{
             while (true){
-                byte[] buf = new byte[2048];
+                byte[] buf = new byte[2060];
                 /* Recebe um pacote através de uma ligação UDP */
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 socket_udp.receive(packet);
