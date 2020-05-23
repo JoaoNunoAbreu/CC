@@ -8,7 +8,7 @@ CLASSES = \
 		AnonGW/AnonGW.java \
 		AnonGW/AnonGWWorker.java \
 		AnonGW/Ligacao.java \
-		Encryption/AESencrp \
+		Encryption/AESencrp.java \
 		Tcp/TcpProxy.java \
 		Tcp/TcpReceiver.java \
 		Udp/PDU.java \
