@@ -37,10 +37,8 @@ public class TcpReceiver implements Runnable {
                 Socket s = ss.accept();
                 Ligacao l = new Ligacao(s.getInetAddress(),ipTarget);
 
-                if(tcp_sockets.containsKey(l))
-                    tcp_sockets.replace(l,s);
-                else
-                    tcp_sockets.put(l,s);
+                if(tcp_sockets.containsKey(l)) tcp_sockets.remove(l,s);
+                tcp_sockets.put(l,s);
 
                 new Thread(new TcpProxy(s,peers,port)).start();
             }
