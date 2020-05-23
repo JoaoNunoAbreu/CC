@@ -71,7 +71,8 @@ public class UdpProxy implements Runnable {
 
             /* Decifrar cada PDU da ligação que foi establecida */
             for(PDU sender: pdu.get(l)){
-                byte[] sender_data = sender.getFileData();
+                byte[] sender_data = new byte[2048];
+                sender_data = sender.getFileData();
                 byte[] dados_decifrados = AESencrp.decrypt(sender_data);
                 out.write(dados_decifrados);
                 out.flush();
