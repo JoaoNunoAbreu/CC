@@ -49,10 +49,6 @@ public class PDU implements Comparable<PDU>{
         return Arrays.copyOfRange(this.fileData,0,this.fileData.length);
     }
 
-    public int getSizeFileData(){
-        return this.fileData.length;
-    }
-
     /* ---------------------------------- Set's ---------------------------------- */
 
     public void setSeqNumber(int seqNumber) { this.seqNumber = seqNumber; }
