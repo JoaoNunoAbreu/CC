@@ -52,7 +52,7 @@ public class PDU implements Comparable<PDU>{
     public String getTarget_response() { return target_response; }
 
     public byte[] getFileData() {
-        return Arrays.copyOf(this.fileData, this.fileData.length);
+        return this.fileData;
     }
 
     /* ---------------------------------- Set's ---------------------------------- */
