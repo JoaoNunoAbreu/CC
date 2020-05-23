@@ -52,7 +52,7 @@ public class UdpProxy implements Runnable {
                 else{
                     tcp_final = new Socket(remoteIp,remotePort);
                     tcp_sockets.put(l,tcp_final);
-                    pdu.put(l,new ArrayList<PDU>());
+                    pdu.put(l,new ArrayList<>());
                 }
             }
 
@@ -61,46 +61,39 @@ public class UdpProxy implements Runnable {
             OutputStream out = tcp_final.getOutputStream();
             System.out.println("A enviar através de tcp: " + Arrays.toString(pacote.toBytes()));
 
-            if(pacote.getUltimo() == 0){
-                pdu.get(l).add(pacote.clone());
+            if(isResposta == 1)
+                System.out.println("(IPHost -> IPTarget) ------> (" + remoteIp + " -> " + pacote.getTarget_response() + ")");
+            else System.out.println("(IPHost -> IPTarget) ------> (" + pacote.getTarget_response() + " -> " + remoteIp + ")");
+
+            Collections.sort(pdu.get(l));
+
+            /* Decifrar cada PDU da ligação que foi establecida */
+            for(PDU sender: pdu.get(l)){
+                byte[] dados_decifrados = AESencrp.decrypt(sender.getFileData());
+                out.write(dados_decifrados);
+                out.flush();
             }
-            else {
+            pdu.get(l).clear();
 
-                if(isResposta == 1)
-                    System.out.println("(IPHost -> IPTarget) ------> (" + remoteIp + " -> " + pacote.getTarget_response() + ")");
-                else System.out.println("(IPHost -> IPTarget) ------> (" + pacote.getTarget_response() + " -> " + remoteIp + ")");
+            byte[] info = new byte[2048];
+            int seqNumber = 0;
+            int size, total_size = 0;
+            while((size = in.read(info)) != -1){
+                byte[] dados_encriptados = AESencrp.encrypt(info);
+                PDU pacote_sender = new PDU(dados_encriptados,dados_encriptados.length);
+                pacote_sender.setTarget_response(pacote.getTarget_response());
+                pacote_sender.setIsResposta(1);
+                pacote_sender.setSeqNumber(seqNumber);
+                /* Envia para o próximo Anon */
 
-                Collections.sort(pdu.get(l));
+                byte[] mensagem = pacote_sender.toBytes();
+                DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,remoteIp,remotePort);
+                socket_udp.send(sender);
 
-                /* Decifrar cada PDU da ligação que foi establecida */
-                for(PDU sender: pdu.get(l)){
-                    byte[] dados_decifrados = AESencrp.decrypt(sender.getFileData());
-                    out.write(dados_decifrados);
-                    out.flush();
-                }
-                pdu.get(l).clear();
-
-                byte[] info = new byte[2048];
-                int seqNumber = 0;
-                int size, total_size = 0;
-                while((size = in.read(info)) != -1){
-                    byte[] dados_encriptados = AESencrp.encrypt(info);
-                    PDU pacote_sender = new PDU(dados_encriptados,dados_encriptados.length);
-                    pacote_sender.setTarget_response(pacote.getTarget_response());
-                    pacote_sender.setIsResposta(1);
-                    pacote_sender.setSeqNumber(seqNumber);
-
-                    /* Envia para o próximo Anon */
-
-                    byte[] mensagem = pacote_sender.toBytes();
-                    DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,remoteIp,remotePort);
-                    socket_udp.send(sender);
-
-                    seqNumber++;
-                    total_size += size;
-                }
-                socket_udp.close();
+                seqNumber++;
+                total_size += size;
             }
+            socket_udp.close();
         }
         catch (Exception e){
             e.printStackTrace();

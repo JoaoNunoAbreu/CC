@@ -39,8 +39,6 @@ public class AnonGWWorker{
             ServerSocket ss = new ServerSocket(portaTCP);
             DatagramSocket socket_udp = new DatagramSocket(portaUDP);
 
-            // FIXME
-            System.out.println("TCP listening in port: " + portaTCP + " and UDP in port:" + portaUDP);
             new Thread(new TcpReceiver(ss,nextPeers,remoteIp,portaUDP,tcp_sockets,pdu)).start();
             new Thread(new UdpReceiver(socket_udp, remoteIp, remotePort,tcp_sockets,pdu)).start();
         } catch (Exception e) {

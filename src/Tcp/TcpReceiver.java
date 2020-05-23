@@ -6,6 +6,7 @@ import Udp.PDU;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class TcpReceiver implements Runnable {
 
                 if(tcp_sockets.containsKey(l)) tcp_sockets.remove(l);
                 tcp_sockets.put(l,s);
-
+                pdu.put(l,new ArrayList<>());
                 new Thread(new TcpProxy(s,peers,port)).start();
             }
         }
