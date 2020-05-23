@@ -93,7 +93,6 @@ public class UdpProxy implements Runnable {
                 seqNumber++;
                 total_size += size;
             }
-            socket_udp.close();
         }
         catch (Exception e){
             e.printStackTrace();
