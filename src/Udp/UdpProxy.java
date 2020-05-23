@@ -60,26 +60,31 @@ public class UdpProxy implements Runnable {
             InputStream in = tcp_final.getInputStream();
             OutputStream out = tcp_final.getOutputStream();
 
-            pdu.get(l).add(pacote.clone());
-
-            if(isResposta == 1)
-                System.out.println("Resposta: (IPHost -> IPTarget) ------> (" + remoteIp + " -> " + pacote.getTarget_response() + ")");
-            else System.out.println("Não resposta: (IPHost -> IPTarget) ------> (" + pacote.getTarget_response() + " -> " + remoteIp + ")");
-
-            Collections.sort(pdu.get(l));
-
-
-            if(isResposta == 1)
-                System.out.println("Lista :" + pdu.get(l).size());
-            /* Decifrar cada PDU da ligação que foi establecida */
-            for(PDU sender: pdu.get(l)){
-                System.out.println("sender.getFileData() = " + Arrays.toString(sender.getFileData()) + ", Tamanho do sender.getFileData(): " + sender.getFileData().length);
-                byte[] dados_decifrados = AESencrp.decrypt(sender.getFileData());
-                out.write(dados_decifrados);
-                out.flush();
-                System.out.println("Estou na decifração do pdu");
+            if(pacote.getIsLast() == 0) {
+                pdu.get(l).add(pacote.clone());
+                return ;
             }
-            pdu.get(l).clear();
+            else {
+
+                if (isResposta == 1)
+                    System.out.println("Resposta: (IPHost -> IPTarget) ------> (" + remoteIp + " -> " + pacote.getTarget_response() + ")");
+                else
+                    System.out.println("Não resposta: (IPHost -> IPTarget) ------> (" + pacote.getTarget_response() + " -> " + remoteIp + ")");
+
+                Collections.sort(pdu.get(l));
+
+                if (isResposta == 1)
+                    System.out.println("Lista :" + pdu.get(l).size());
+                /* Decifrar cada PDU da ligação que foi establecida */
+                for (PDU sender : pdu.get(l)) {
+                    System.out.println("sender.getFileData() = " + Arrays.toString(sender.getFileData()) + ", Tamanho do sender.getFileData(): " + sender.getFileData().length);
+                    byte[] dados_decifrados = AESencrp.decrypt(sender.getFileData());
+                    out.write(dados_decifrados);
+                    out.flush();
+                    System.out.println("Estou na decifração do pdu");
+                }
+                pdu.get(l).clear();
+            }
 
             byte[] info = new byte[2048];
             int size, seqNumber = 0;
@@ -101,6 +106,22 @@ public class UdpProxy implements Runnable {
                 System.out.println("Estou a ler do socket: " + tcp_final.getInetAddress());
                 seqNumber++;
             }
+
+            Thread.sleep(100);
+
+            if(seqNumber > 0) {
+                /* Send the terminating packet if any packets got send at all */
+                PDU last = new PDU("final".getBytes(),5);
+                last.setTarget_response(pacote.getTarget_response());
+                last.setIsResposta(1);
+                last.setIsLast(1);
+                last.setSeqNumber(seqNumber);
+
+                /* Send it to the other AnonGW */
+                DatagramPacket send = new DatagramPacket(last.toBytes(), last.toBytes().length, ip_anterior, porta_anterior);
+                socket_udp.send(send);
+            }
+
             socket_udp.close();
         }
         catch (Exception e){

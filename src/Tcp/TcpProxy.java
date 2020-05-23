@@ -3,6 +3,7 @@ package Tcp;
 import Encryption.AESencrp;
 import Udp.PDU;
 
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.*;
 import java.util.Arrays;
@@ -51,6 +52,15 @@ public class TcpProxy implements Runnable {
             System.out.println("Mensagem a enviar para próximo anon: " + Arrays.toString(mensagem));
             DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,peers[rnd],port);
             socket_udp.send(sender);
+
+            Thread.sleep(100);
+
+            /* Envio do pacote final */
+            PDU last = new PDU("final".getBytes(),5);
+            last.setIsLast(1);
+            last.setTarget_response(s.getInetAddress().getHostName());
+            DatagramPacket last_pacote = new DatagramPacket(last.toBytes(),last.toBytes().length,peers[rnd],port);
+            socket_udp.send(last_pacote);
 
             Arrays.fill(buf,(byte)0);
         }
