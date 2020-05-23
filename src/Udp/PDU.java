@@ -63,22 +63,20 @@ public class PDU implements Comparable<PDU>{
 
     public byte[] toBytes() {
         byte[] utf8_host = this.target_response.getBytes(StandardCharsets.UTF_8);
-        ByteBuffer packet = ByteBuffer.allocate(12 + this.target_response.getBytes().length + this.fileData.length);
+        ByteBuffer packet = ByteBuffer.allocate(16 + this.fileData.length);
         packet.put(ByteBuffer.allocate(4).putInt(this.seqNumber).array());
         packet.put(ByteBuffer.allocate(4).putInt(this.isResposta).array());
-        packet.put(ByteBuffer.allocate(4).putInt(utf8_host.length).array());
         packet.put(utf8_host);
         packet.put(this.fileData);
 
         return packet.array();
     }
 
-    public void fromBytes(byte[] pdu, int length){
+    public void fromBytes(byte[] pdu, int length){ // length = 2060
         seqNumber = ByteBuffer.wrap(Arrays.copyOfRange(pdu, 0, 4)).getInt();
         isResposta = ByteBuffer.wrap(Arrays.copyOfRange(pdu, 4, 8)).getInt();
-        int answerToSize = ByteBuffer.wrap(Arrays.copyOfRange(pdu, 8, 12)).getInt();
-        target_response = new String(ByteBuffer.wrap(Arrays.copyOfRange(pdu, 12, answerToSize + 12)).array());
-        fileData = ByteBuffer.wrap(Arrays.copyOfRange(pdu, answerToSize + 12, length)).array();
+        target_response = new String(ByteBuffer.wrap(Arrays.copyOfRange(pdu, 8,  16)).array());
+        fileData = ByteBuffer.wrap(Arrays.copyOfRange(pdu, 16, length)).array();
     }
 
     @Override
