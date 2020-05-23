@@ -17,7 +17,6 @@ public class PDU implements Comparable<PDU>{
     public PDU() {
         this.seqNumber = 0;
         this.isResposta = 0;
-        this.ultimo = 0;
         this.target_response = "";
         this.fileData = new byte[2048];
     }
@@ -25,7 +24,6 @@ public class PDU implements Comparable<PDU>{
     public PDU(byte[] data, int size) {
         this.seqNumber = 0;
         this.isResposta = 0;
-        this.ultimo = 0;
         this.target_response = "";
         this.fileData = new byte[size];
         this.fileData = Arrays.copyOf(data, size);
@@ -33,7 +31,6 @@ public class PDU implements Comparable<PDU>{
 
     public PDU(PDU pdu){
         this.seqNumber = pdu.getSeqNumber();
-        this.ultimo = pdu.getUltimo();
         this.isResposta = pdu.getIsResposta();
         this.target_response = pdu.getTarget_response();
         this.fileData = pdu.getFileData().clone();
@@ -46,8 +43,6 @@ public class PDU implements Comparable<PDU>{
     }
 
     public int getIsResposta() { return isResposta; }
-
-    public int getUltimo() { return ultimo; }
 
     public String getTarget_response() { return target_response; }
 
@@ -64,8 +59,6 @@ public class PDU implements Comparable<PDU>{
     public void setSeqNumber(int seqNumber) { this.seqNumber = seqNumber; }
 
     public void setIsResposta(int isResposta) { this.isResposta = isResposta; }
-
-    public void setUltimo(int ultimo) { this.ultimo = ultimo; }
 
     public void setTarget_response(String target_response) { this.target_response = target_response; }
 
@@ -88,11 +81,10 @@ public class PDU implements Comparable<PDU>{
 
     public void fromBytes(byte[] pdu, int length){
         seqNumber = ByteBuffer.wrap(Arrays.copyOfRange(pdu, 0, 4)).getInt();
-        ultimo = ByteBuffer.wrap(Arrays.copyOfRange(pdu, 4, 8)).getInt();
-        isResposta = ByteBuffer.wrap(Arrays.copyOfRange(pdu, 8, 12)).getInt();
-        int answerToSize = ByteBuffer.wrap(Arrays.copyOfRange(pdu, 12, 16)).getInt();
-        target_response = new String(ByteBuffer.wrap(Arrays.copyOfRange(pdu, 16, answerToSize + 16)).array());
-        fileData = ByteBuffer.wrap(Arrays.copyOfRange(pdu, answerToSize + 16, length)).array();
+        isResposta = ByteBuffer.wrap(Arrays.copyOfRange(pdu, 4, 8)).getInt();
+        int answerToSize = ByteBuffer.wrap(Arrays.copyOfRange(pdu, 8, 12)).getInt();
+        target_response = new String(ByteBuffer.wrap(Arrays.copyOfRange(pdu, 12, answerToSize + 12)).array());
+        fileData = ByteBuffer.wrap(Arrays.copyOfRange(pdu, answerToSize + 12, length)).array();
     }
 
     @Override
