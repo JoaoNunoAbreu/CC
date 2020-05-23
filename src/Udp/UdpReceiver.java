@@ -39,7 +39,7 @@ public class UdpReceiver implements Runnable{
                 System.out.println("pacote.getFileData() = " + Arrays.toString(pacote.getFileData()));
 
                 /* Tratamento do PDU */
-                new Thread(new UdpProxy(packet.getAddress(),6666,remoteIp,remotePort,pacote,tcp_sockets,pdu)).start();
+                new Thread(new UdpProxy(6666, packet.getAddress(), pacote, remotePort, remoteIp, tcp_sockets, pdu)).start();
             }
         }
         catch (Exception e){
