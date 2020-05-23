@@ -38,6 +38,7 @@ public class UdpReceiver implements Runnable{
                 /* Cria e preenche um PDU */
                 PDU pacote = new PDU();
                 pacote.fromBytes(packet.getData(),packet.getLength());
+                System.out.println("O novo PDU criado tem fileData com tamanho = " + pacote.getSizeFileData());
 
                 /* Tratamento do PDU */
                 new Thread(new UdpProxy(packet.getAddress(),6666,remoteIp,remotePort,pacote,tcp_sockets,pdu)).start();
