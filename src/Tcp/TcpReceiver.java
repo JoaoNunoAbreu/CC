@@ -40,7 +40,7 @@ public class TcpReceiver implements Runnable {
 
                 if(tcp_sockets.containsKey(l)) tcp_sockets.remove(l);
                 tcp_sockets.put(l,s);
-                pdu.put(l,new ArrayList<>());
+                pdu.put(l,new ArrayList<PDU>());
                 new Thread(new TcpProxy(s,peers,port)).start();
             }
         }

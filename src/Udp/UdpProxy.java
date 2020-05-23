@@ -52,7 +52,7 @@ public class UdpProxy implements Runnable {
                 else{
                     tcp_final = new Socket(remoteIp,remotePort);
                     tcp_sockets.put(l,tcp_final);
-                    pdu.put(l,new ArrayList<>());
+                    pdu.put(l,new ArrayList<PDU>());
                 }
             }
 
