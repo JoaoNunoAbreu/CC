@@ -28,18 +28,19 @@ public class UdpReceiver implements Runnable{
     public void run(){
         try{
             PDU pacote = new PDU();
-            while (true){
+            while (true) {
                 byte[] buf = new byte[2068];
                 /* Recebe um pacote através de uma ligação UDP */
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 socket_udp.receive(packet);
 
                 /* Cria e preenche um PDU */
-                pacote.fromBytes(packet.getData(),packet.getLength());
+                pacote.fromBytes(packet.getData(), packet.getLength());
                 System.out.println("pacote.getFileData() = " + Arrays.toString(pacote.getFileData()));
 
                 /* Tratamento do PDU */
-                new Thread(new UdpProxy(packet.getAddress(),6666,remoteIp,remotePort,pacote,tcp_sockets,pdu)).start();            }
+                new Thread(new UdpProxy(6666, packet.getAddress(), pacote, remotePort, remoteIp, tcp_sockets, pdu)).start();
+            }
         }
         catch (Exception e){
             e.printStackTrace();
