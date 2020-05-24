@@ -56,12 +56,12 @@ public class TcpProxy implements Runnable {
 
             //Thread.sleep(100);
 
-            /* Envio do pacote final */
-            PDU last = new PDU("111".getBytes(),"111".getBytes().length);
+            /* Envio do pacote final
+            PDU last = new PDU(encodedKey,encodedKey.length);
             last.setIsLast(1);
             last.setTarget_response(s.getInetAddress().getHostName());
             DatagramPacket last_packet = new DatagramPacket(last.toBytes(), last.toBytes().length, peers[rnd], port);
-            socket_udp.send(last_packet);
+            socket_udp.send(last_packet);*/
 
             Arrays.fill(buf,(byte)0);
         }

@@ -111,6 +111,7 @@ public class UdpProxy implements Runnable {
                 byte[] dados_encriptados = AESencrp.encrypt(info);
                 PDU pdu = new PDU(dados_encriptados,dados_encriptados.length);
                 pdu.setTarget_response(this.pdu.getTarget_response());
+                pdu.setIsLast(1);
                 pdu.setIsResposta(1);
                 pdu.setSeqNumber(seqNumber++);
 
@@ -122,21 +123,21 @@ public class UdpProxy implements Runnable {
             }
             System.out.println("SENT " + total + " BYTES!");
 
-            Thread.sleep(100);
+            /*Thread.sleep(100);
 
             if(seqNumber > 0) {
-                /* Send the terminating packet if any packets got send at all */
+                /* Send the terminating packet if any packets got send at all
                 PDU last = new PDU("111".getBytes(),"111".getBytes().length);
                 last.setTarget_response(pdu.getTarget_response());
                 last.setIsResposta(1);
                 last.setIsLast(1);
-                last.setSeqNumber(seqNumber);
+                last.setSeqNumber(seqNumber);*/
 
-                /* Send it to the other AnonGW */
+                /* Send it to the other AnonGW
                 DatagramPacket send = new DatagramPacket(last.toBytes(), last.toBytes().length, ip_anterior, porta_anterior);
                 udp.send(send);
                 System.out.println("SENT LAST PACKET");
-            }
+            }*/
             udp.close();
         } catch(BadPaddingException e){
             System.out.println("Key got corrupted! Try asking again.") ;
