@@ -15,11 +15,15 @@ public class TcpProxy implements Runnable {
     private Socket s;
     private InetAddress[] peers;
     private int port;
+    private byte[] encodedKey;
+    private Cipher cipher;
 
-    public TcpProxy(Socket s, InetAddress[] peers, int port) {
+    public TcpProxy(Socket s, InetAddress[] peers, int port, byte[] encodedKey, Cipher cipher) {
         this.s = s;
         this.peers = peers;
         this.port = port;
+        this.encodedKey = encodedKey;
+        this.cipher = cipher;
     }
 
     /**
@@ -28,7 +32,7 @@ public class TcpProxy implements Runnable {
     @Override
     public void run() {
         try{
-            byte[] buf = new byte[2068];
+            byte[] buf = new byte[2048];
             int rnd = new Random().nextInt(peers.length);
             System.out.println("List of peers = " + Arrays.toString(peers) + ", however " + peers[rnd] + " was the chosen one.");
             DatagramSocket socket_udp = new DatagramSocket();
@@ -38,10 +42,10 @@ public class TcpProxy implements Runnable {
             int size = in.read(buf);
             System.out.println("Linha recebida do cliente: " + Arrays.toString(buf) + " com tamanho = " + size);
 
-            buf = Arrays.copyOfRange(buf, 0, size);
+            //buf = Arrays.copyOfRange(buf, 0, size);
 
             /* Encriptação */
-            byte[] dados_encriptados = AESencrp.encrypt(buf);
+            byte[] dados_encriptados = cipher.doFinal(Arrays.copyOfRange(buf, 0, size));
             System.out.println("TCPProxy: dados_encriptados.length = " + dados_encriptados.length);
 
             /* Criação do PDU */
@@ -54,14 +58,14 @@ public class TcpProxy implements Runnable {
             DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,peers[rnd],port);
             socket_udp.send(sender);
 
-            //Thread.sleep(100);
+            Thread.sleep(100);
 
-            /* Envio do pacote final
+            /* Envio do pacote final */
             PDU last = new PDU(encodedKey,encodedKey.length);
             last.setIsLast(1);
             last.setTarget_response(s.getInetAddress().getHostName());
             DatagramPacket last_packet = new DatagramPacket(last.toBytes(), last.toBytes().length, peers[rnd], port);
-            socket_udp.send(last_packet);*/
+            socket_udp.send(last_packet);
 
             Arrays.fill(buf,(byte)0);
         }
