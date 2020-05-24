@@ -11,20 +11,20 @@ import java.net.*;
 import java.util.*;
 
 public class UdpProxy implements Runnable {
-    private InetAddress ip_anterior;
-    private int porta_anterior;
-    private InetAddress remoteIp;
-    private int remotePort;
+    private int portToAnswer;
+    private InetAddress adressToAnswer;
     private PDU pdu;
+    private int redirectToPort;
+    private InetAddress redirectToAdress;
     private Map<Ligacao, Socket> tcp_sockets;
     private Hashtable<Ligacao, List<PDU>> pdu_map;
 
-    public UdpProxy(InetAddress ip_anterior, int porta_anterior, InetAddress remoteIp, int remotePort, PDU pdu, Map<Ligacao, Socket> tcp_sockets, Hashtable<Ligacao, List<PDU>> pdu_map) {
-        this.ip_anterior = ip_anterior;
-        this.porta_anterior = porta_anterior;
-        this.remoteIp = remoteIp;
-        this.remotePort = remotePort;
-        this.pdu = pdu;
+    public UdpProxy(int portToAnswer, InetAddress adressToAnswer, PDU pdu, int redirectToPort, InetAddress redirectToAdress, Map<Ligacao, Socket> tcp_sockets, Hashtable<Ligacao, List<PDU>> pdu_map){
+        this.portToAnswer = portToAnswer;
+        this.adressToAnswer = adressToAnswer;
+        this.pdu = pdu.clone();
+        this.redirectToPort = redirectToPort;
+        this.redirectToAdress = redirectToAdress;
         this.tcp_sockets = tcp_sockets;
         this.pdu_map = pdu_map;
     }
@@ -41,16 +41,16 @@ public class UdpProxy implements Runnable {
             boolean isAnswer = pdu.getIsResposta() > 0;
             /* Establish UDP connection with source AnonGW and TCP connection with target */
             if(isAnswer){
-                session = new Ligacao(InetAddress.getByName(pdu.getTarget_response()), remoteIp); // client hoards data from target
+                session = new Ligacao(InetAddress.getByName(pdu.getTarget_response()), redirectToAdress); // client hoards data from target
                 tcp = tcp_sockets.get(session);
             }
             /* Getting data from client here */
             else {
-                session = new Ligacao(remoteIp, InetAddress.getByName(pdu.getTarget_response())); // target hoards data from client
+                session = new Ligacao(redirectToAdress, InetAddress.getByName(pdu.getTarget_response())); // target hoards data from client
                 if(tcp_sockets.containsKey(session)) {
                     tcp = tcp_sockets.get(session);
                 } else {
-                    tcp = new Socket(remoteIp, remotePort);
+                    tcp = new Socket(redirectToAdress, redirectToPort);
                     tcp_sockets.put(session, tcp);
                     pdu_map.put(session, new ArrayList<PDU>());
                 }
@@ -79,8 +79,8 @@ public class UdpProxy implements Runnable {
                 // Get the order right and send all packets
                 int total_bytes = 0;
 
-                if(isAnswer) System.out.println("Sending from session ---> (Host: " + remoteIp + ", Target: " + pdu.getTarget_response());
-                else System.out.println("Sending from session ---> (Host: " + pdu.getTarget_response() + ", Target: " + remoteIp);
+                if(isAnswer) System.out.println("Sending from session ---> (Host: " + redirectToAdress + ", Target: " + pdu.getTarget_response());
+                else System.out.println("Sending from session ---> (Host: " + pdu.getTarget_response() + ", Target: " + redirectToAdress);
                 // Sort the PDU's
                 Collections.sort(pdu_map.get(session));
 
@@ -112,7 +112,7 @@ public class UdpProxy implements Runnable {
 
                 /* Send its to the other AnonGW */
                 byte[] send_data = pdu.toBytes();
-                DatagramPacket send = new DatagramPacket(send_data, send_data.length, ip_anterior, porta_anterior);
+                DatagramPacket send = new DatagramPacket(send_data, send_data.length, adressToAnswer, portToAnswer);
                 udp.send(send);
             }
             System.out.println("SENT " + total + " BYTES!");
@@ -128,7 +128,7 @@ public class UdpProxy implements Runnable {
                 last.setSeqNumber(packet_num);
 
                 /* Send it to the other AnonGW */
-                DatagramPacket send = new DatagramPacket(last.toBytes(), last.toBytes().length, ip_anterior, porta_anterior);
+                DatagramPacket send = new DatagramPacket(last.toBytes(), last.toBytes().length, adressToAnswer, portToAnswer);
                 udp.send(send);
                 System.out.println("SENT LAST PACKET");
             }
