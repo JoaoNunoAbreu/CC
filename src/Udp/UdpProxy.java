@@ -2,6 +2,7 @@ package Udp;
 
 import AnonGW.Ligacao;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -10,68 +11,64 @@ import java.net.*;
 import java.util.*;
 
 public class UdpProxy implements Runnable {
+    private int portToAnswer;
+    private InetAddress adressToAnswer;
+    private PDU pdu;
+    private int redirectToPort;
+    private InetAddress redirectToAdress;
+    private Map<Ligacao, Socket> tcp_sockets;
+    private Hashtable<Ligacao, List<PDU>> pdu_map;
 
-    private InetAddress ip_anterior;
-    private int porta_anterior;
-    private InetAddress remoteIp;
-    private int remotePort;
-    private PDU pacote;
-    private Map<Ligacao,Socket> tcp_sockets;
-    private Hashtable<Ligacao, List<PDU>> pdu;
-
-    public UdpProxy(InetAddress ip_anterior, int porta_anterior, InetAddress remoteIp, int remotePort, PDU pacote, Map<Ligacao, Socket> tcp_sockets, Hashtable<Ligacao, List<PDU>> pdu) {
-        this.ip_anterior = ip_anterior;
-        this.porta_anterior = porta_anterior;
-        this.remoteIp = remoteIp;
-        this.remotePort = remotePort;
-        this.pacote = pacote.clone();
+    public UdpProxy(int portToAnswer, InetAddress adressToAnswer, PDU pdu, int redirectToPort, InetAddress redirectToAdress, Map<Ligacao, Socket> tcp_sockets, Hashtable<Ligacao, List<PDU>> pdu_map){
+        this.portToAnswer = portToAnswer;
+        this.adressToAnswer = adressToAnswer;
+        this.pdu = pdu.clone();
+        this.redirectToPort = redirectToPort;
+        this.redirectToAdress = redirectToAdress;
         this.tcp_sockets = tcp_sockets;
-        this.pdu = pdu;
+        this.pdu_map = pdu_map;
     }
 
-    /**
-     * Troca mensagens entre um socket UDP e um socket TCP
-     */
     @Override
     public void run() {
-        try{
-            DatagramSocket socket_udp = new DatagramSocket();
-            Socket tcp_final;
-            Ligacao l;
+        try {
+            Socket tcp;
+            Ligacao session;
+            DatagramSocket udp = new DatagramSocket();
             SecretKey secretKey;
             Cipher decriptCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
             Cipher encriptCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
-            int isResposta = pacote.getIsResposta();
-
-            /* Já obteve resposta do servidor, está a voltar para trás */
-            // FIXME
-            if(isResposta > 0){
-                l = new Ligacao(InetAddress.getByName(pacote.getTarget_response()),remoteIp);
-                tcp_final = tcp_sockets.get(l);
+            boolean isAnswer = pdu.getIsResposta() > 0;
+            /* Establish UDP connection with source AnonGW and TCP connection with target */
+            if(isAnswer){
+                session = new Ligacao(InetAddress.getByName(pdu.getTarget_response()), redirectToAdress); // client hoards data from target
+                tcp = tcp_sockets.get(session);
             }
-            /* A obter resposta do cliente */
-            else{
-                l = new Ligacao(remoteIp,InetAddress.getByName(pacote.getTarget_response()));
-                if(tcp_sockets.containsKey(l)){
-                    tcp_final = tcp_sockets.get(l);
-                }
-                else{
-                    tcp_final = new Socket(remoteIp,remotePort);
-                    tcp_sockets.put(l,tcp_final);
-                    pdu.put(l,new ArrayList<PDU>());
-                }
-            }
-
-            /* Ligação TCP */
-            InputStream in = tcp_final.getInputStream();
-            OutputStream out = tcp_final.getOutputStream();
-
-            if(pacote.getIsLast() == 0) {
-                pdu.get(l).add(pacote.clone());
-                return ;
-            }
+            /* Getting data from client here */
             else {
-                byte[] key = pacote.getFileData();
+                session = new Ligacao(redirectToAdress, InetAddress.getByName(pdu.getTarget_response())); // target hoards data from client
+                if(tcp_sockets.containsKey(session)) {
+                    tcp = tcp_sockets.get(session);
+                } else {
+                    tcp = new Socket(redirectToAdress, redirectToPort);
+                    tcp_sockets.put(session, tcp);
+                    pdu_map.put(session, new ArrayList<PDU>());
+                }
+            }
+
+            /* Open both ends for TCP communication */
+            InputStream br = tcp.getInputStream();
+            OutputStream pw = tcp.getOutputStream();
+
+            /* Send the packet obtained to target (TEMPORARY) */
+            if(pdu.getIsLast() == 0){
+                System.out.println("Packet " + pdu.getSeqNumber() + " added to the list -> " + pdu.getFileData().length);
+                pdu_map.get(session).add(pdu.clone());
+                return ;
+            } else {
+                /* Decrypt key obtained from final packet */
+                byte[] key = pdu.getFileData();
+                //System.out.println("Hexadecimal key obtained: " + new String(pdu.getData()));
                 System.out.println("Key used: " + Arrays.toString(key));
                 secretKey = new SecretKeySpec(key, 0, key.length, "DES");
 
@@ -79,65 +76,66 @@ public class UdpProxy implements Runnable {
                 decriptCipher.init(Cipher.DECRYPT_MODE, secretKey);
                 encriptCipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
-                if (isResposta == 1)
-                    System.out.println("Resposta: (IPHost -> IPTarget) ------> (" + remoteIp + " -> " + pacote.getTarget_response() + ")");
-                else
-                    System.out.println("Não resposta: (IPHost -> IPTarget) ------> (" + pacote.getTarget_response() + " -> " + remoteIp + ")");
+                // Get the order right and send all packets
+                int total_bytes = 0;
 
-                Collections.sort(pdu.get(l));
-                int total = 0;
-                /* Decifrar cada PDU da ligação que foi establecida */
-                for (PDU sender : pdu.get(l)) {
-                    System.out.println("sender.getFileData() = " + Arrays.toString(sender.getFileData()) + ", Tamanho do sender.getFileData(): " + sender.getFileData().length);
-                    byte[] dados_decifrados = decriptCipher.doFinal(sender.getFileData());
-                    total += dados_decifrados.length;
-                    out.write(dados_decifrados);
-                    out.flush();
-                    System.out.println("Estou na decifração do pdu");
+                if(isAnswer) System.out.println("Sending from session ---> (Host: " + redirectToAdress + ", Target: " + pdu.getTarget_response());
+                else System.out.println("Sending from session ---> (Host: " + pdu.getTarget_response() + ", Target: " + redirectToAdress);
+                // Sort the PDU's
+                Collections.sort(pdu_map.get(session));
+
+                // Send them
+                for(PDU send : pdu_map.get(session)){
+                    byte[] decryptedData = decriptCipher.doFinal(send.getFileData());
+                    total_bytes += decryptedData.length;
+                    pw.write(decryptedData);
+                    pw.flush();
                 }
-                pdu.get(l).clear();
-                System.out.println("Sending a total of " + total + " to the target.");
+                /* Clear the packets from the list since they have been sent */
+                pdu_map.get(session).clear();
+                System.out.println("Sending a total of " + total_bytes + " to the target.");
             }
 
-            byte[] info = new byte[2048];
-            int size, seqNumber = 0;
-            int total = 0;
-            while((size = in.read(info)) != -1){
-                total += size;
-                //info = Arrays.copyOfRange(info, 0, size);
-                System.out.println("Sent packet " + seqNumber + " -> " + size);
-                byte[] dados_encriptados = encriptCipher.doFinal(Arrays.copyOfRange(info, 0, size));
-                PDU pacote_sender = new PDU(dados_encriptados,dados_encriptados.length);
-                pacote_sender.setTarget_response(pacote.getTarget_response());
-                pacote_sender.setIsResposta(1);
-                pacote_sender.setSeqNumber(seqNumber++);
-                /* Envia para o próximo Anon */
+            /* Keep getting data from target */
+            byte[] data = new byte[1448];
+            int packet_num = 0;
+            int count, total = 0;
+            while((count = br.read(data)) != -1) {
+                total += count;
+                System.out.println("Sent packet " + packet_num + " -> " + count);
+                /* Wrap the data in a PDU */
+                byte[] encryptedData = encriptCipher.doFinal(Arrays.copyOfRange(data, 0, count));
+                PDU pdu = new PDU(encryptedData,encryptedData.length);
+                pdu.setTarget_response(this.pdu.getTarget_response());
+                pdu.setIsResposta(1);
+                pdu.setSeqNumber(packet_num++);
 
-                byte[] mensagem = pacote_sender.toBytes();
-                DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,ip_anterior,porta_anterior);
-                socket_udp.send(sender);
-                System.out.println("Estou a ler do socket: " + tcp_final.getInetAddress());
+                /* Send its to the other AnonGW */
+                byte[] send_data = pdu.toBytes();
+                DatagramPacket send = new DatagramPacket(send_data, send_data.length, adressToAnswer, portToAnswer);
+                udp.send(send);
             }
+            System.out.println("SENT " + total + " BYTES!");
 
             Thread.sleep(100);
 
-            if(seqNumber > 0) {
+            if(packet_num > 0) {
                 /* Send the terminating packet if any packets got send at all */
                 PDU last = new PDU(secretKey.getEncoded(),secretKey.getEncoded().length);
-                last.setTarget_response(pacote.getTarget_response());
+                last.setTarget_response(pdu.getTarget_response());
                 last.setIsResposta(1);
                 last.setIsLast(1);
-                last.setSeqNumber(seqNumber);
+                last.setSeqNumber(packet_num);
 
                 /* Send it to the other AnonGW */
-                DatagramPacket send = new DatagramPacket(last.toBytes(), last.toBytes().length, remoteIp, remotePort);
-                socket_udp.send(send);
+                DatagramPacket send = new DatagramPacket(last.toBytes(), last.toBytes().length, adressToAnswer, portToAnswer);
+                udp.send(send);
                 System.out.println("SENT LAST PACKET");
             }
-
-            socket_udp.close();
-        }
-        catch (Exception e){
+            udp.close();
+        } catch(BadPaddingException e){
+            System.out.println("Key got corrupted! Try asking again.") ;
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
