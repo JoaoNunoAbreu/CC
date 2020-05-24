@@ -31,49 +31,51 @@ public class UdpProxy implements Runnable {
     @Override
     public void run() {
         try {
-            Socket tcp;
-            Ligacao session;
             DatagramSocket udp = new DatagramSocket();
-            SecretKey secretKey;
+            Socket tcp_final;
+            Ligacao l;
+
+            SecretKey chave;
             Cipher decriptCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
             Cipher encriptCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+
             boolean isAnswer = pdu.getIsResposta() > 0;
             /* Establish UDP connection with source AnonGW and TCP connection with target */
             if(isAnswer){
-                session = new Ligacao(InetAddress.getByName(pdu.getTarget_response()), remoteIp); // client hoards data from target
-                tcp = tcp_sockets.get(session);
+                l = new Ligacao(InetAddress.getByName(pdu.getTarget_response()), remoteIp); // client hoards data from target
+                tcp_final = tcp_sockets.get(l);
             }
             /* Getting data from client here */
             else {
-                session = new Ligacao(remoteIp, InetAddress.getByName(pdu.getTarget_response())); // target hoards data from client
-                if(tcp_sockets.containsKey(session)) {
-                    tcp = tcp_sockets.get(session);
+                l = new Ligacao(remoteIp, InetAddress.getByName(pdu.getTarget_response())); // target hoards data from client
+                if(tcp_sockets.containsKey(l)) {
+                    tcp_final = tcp_sockets.get(l);
                 } else {
-                    tcp = new Socket(remoteIp, remotePort);
-                    tcp_sockets.put(session, tcp);
-                    pdu_map.put(session, new ArrayList<PDU>());
+                    tcp_final = new Socket(remoteIp, remotePort);
+                    tcp_sockets.put(l, tcp_final);
+                    pdu_map.put(l, new ArrayList<PDU>());
                 }
             }
 
             /* Open both ends for TCP communication */
-            InputStream br = tcp.getInputStream();
-            OutputStream pw = tcp.getOutputStream();
+            InputStream br = tcp_final.getInputStream();
+            OutputStream pw = tcp_final.getOutputStream();
 
             /* Send the packet obtained to target (TEMPORARY) */
             if(pdu.getIsLast() == 0){
                 System.out.println("Packet " + pdu.getSeqNumber() + " added to the list -> " + pdu.getFileData().length);
-                pdu_map.get(session).add(pdu.clone());
+                pdu_map.get(l).add(pdu.clone());
                 return ;
             } else {
                 /* Decrypt key obtained from final packet */
                 byte[] key = pdu.getFileData();
                 //System.out.println("Hexadecimal key obtained: " + new String(pdu.getData()));
                 System.out.println("Key used: " + Arrays.toString(key));
-                secretKey = new SecretKeySpec(key, 0, key.length, "DES");
+                chave = new SecretKeySpec(key, 0, key.length, "DES");
 
                 /* Init the cypher */
-                decriptCipher.init(Cipher.DECRYPT_MODE, secretKey);
-                encriptCipher.init(Cipher.ENCRYPT_MODE, secretKey);
+                decriptCipher.init(Cipher.DECRYPT_MODE, chave);
+                encriptCipher.init(Cipher.ENCRYPT_MODE, chave);
 
                 // Get the order right and send all packets
                 int total_bytes = 0;
@@ -81,17 +83,17 @@ public class UdpProxy implements Runnable {
                 if(isAnswer) System.out.println("Sending from session ---> (Host: " + remoteIp + ", Target: " + pdu.getTarget_response());
                 else System.out.println("Sending from session ---> (Host: " + pdu.getTarget_response() + ", Target: " + remoteIp);
                 // Sort the PDU's
-                Collections.sort(pdu_map.get(session));
+                Collections.sort(pdu_map.get(l));
 
                 // Send them
-                for(PDU send : pdu_map.get(session)){
+                for(PDU send : pdu_map.get(l)){
                     byte[] decryptedData = decriptCipher.doFinal(send.getFileData());
                     total_bytes += decryptedData.length;
                     pw.write(decryptedData);
                     pw.flush();
                 }
                 /* Clear the packets from the list since they have been sent */
-                pdu_map.get(session).clear();
+                pdu_map.get(l).clear();
                 System.out.println("Sending a total of " + total_bytes + " to the target.");
             }
 
@@ -120,7 +122,7 @@ public class UdpProxy implements Runnable {
 
             if(packet_num > 0) {
                 /* Send the terminating packet if any packets got send at all */
-                PDU last = new PDU(secretKey.getEncoded(),secretKey.getEncoded().length);
+                PDU last = new PDU(chave.getEncoded(),chave.getEncoded().length);
                 last.setTarget_response(pdu.getTarget_response());
                 last.setIsResposta(1);
                 last.setIsLast(1);
