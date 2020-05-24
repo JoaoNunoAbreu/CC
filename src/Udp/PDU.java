@@ -6,11 +6,11 @@ import java.util.Arrays;
 
 public class PDU implements Comparable<PDU>{
 
-    private int seqNumber;
-    private int isResposta;
-    private int isLast;
-    private String target_response;
-    private byte[] fileData;
+    private int seqNumber;              /* Para sabermos a ordem de pacotes         */
+    private int isResposta;             /* Para sabermos se é uma resposta          */
+    private int isLast;                 /* Para sabermos se é o último pacote       */
+    private String target_response;     /* Para sabermos a quem temos de responder  */
+    private byte[] fileData;            /* Para sabermos o conteúdo do pacote       */
 
     /* ---------------------------------- Construtores ---------------------------------- */
 

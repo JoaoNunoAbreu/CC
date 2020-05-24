@@ -66,7 +66,7 @@ public class UdpProxy implements Runnable {
             OutputStream pw = tcp_final.getOutputStream();
 
             if(pdu.getIsLast() == 0){
-                System.out.println("Pacaote com seqNumber = " + pdu.getSeqNumber() + " foi adicionado -> " + pdu.getFileData().length);
+                System.out.println("Pacote com seqNumber = " + pdu.getSeqNumber() + " foi adicionado -> " + pdu.getFileData().length);
                 pdu_map.get(l).add(pdu.clone());
                 return ;
             } else {

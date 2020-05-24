@@ -42,18 +42,15 @@ public class TcpReceiver implements Runnable {
                 tcp_sockets.put(l,s);
                 pdu.put(l,new ArrayList<PDU>());
 
-                /* Generate key */
-                KeyGenerator keygenerator = KeyGenerator.getInstance("DES");
-                SecretKey chaveDES = keygenerator.generateKey();
-                System.out.println("Key used: " + Arrays.toString(chaveDES.getEncoded()));
+                /* Gera a única chave */
+                KeyGenerator keygen = KeyGenerator.getInstance("DES");
+                SecretKey chave = keygen.generateKey();
 
-                /* Create the cypher */
-                Cipher cifraDES = Cipher.getInstance("DES/ECB/PKCS5Padding");
+                /* Cria a cifra e inicializa */
+                Cipher cifra = Cipher.getInstance("DES/ECB/PKCS5Padding");
+                cifra.init(Cipher.ENCRYPT_MODE, chave);
 
-                /* Init the cypher */
-                cifraDES.init(Cipher.ENCRYPT_MODE, chaveDES);
-
-                new Thread(new TcpProxy(s,peers,port,chaveDES.getEncoded(), cifraDES)).start();
+                new Thread(new TcpProxy(s,peers,port,chave.getEncoded(), cifra)).start();
             }
         }
         catch (Exception e) {
