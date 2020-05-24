@@ -102,7 +102,7 @@ public class UdpProxy implements Runnable {
 
             /* Keep getting data from target */
             // FIXME checkar aqui
-            byte[] data = new byte[2048];
+            byte[] data = new byte[1448];
             int size, seqNumber = 0;
             int total = 0;
             while((size = br.read(data)) != -1) {
