@@ -11,21 +11,20 @@ import java.net.*;
 import java.util.*;
 
 public class UdpProxy implements Runnable {
-    private int porta_anterior;
     private InetAddress ip_anterior;
-    private PDU pdu;
-    private int remotePort;
+    private int porta_anterior;
     private InetAddress remoteIp;
+    private int remotePort;
+    private PDU pdu;
     private Map<Ligacao, Socket> tcp_sockets;
     private Hashtable<Ligacao, List<PDU>> pdu_map;
 
-    public UdpProxy(int porta_anterior, InetAddress ip_anterior, PDU pdu, int remotePort, InetAddress remoteIp, Map<Ligacao, Socket> tcp_sockets, Hashtable<Ligacao, List<PDU>> pdu_map){
-        this.porta_anterior = porta_anterior;
+    public UdpProxy(InetAddress ip_anterior, int porta_anterior, InetAddress remoteIp, int remotePort, PDU pdu, Map<Ligacao, Socket> tcp_sockets, Hashtable<Ligacao, List<PDU>> pdu_map){
         this.ip_anterior = ip_anterior;
-        this.pdu = pdu.clone();
-        this.remotePort = remotePort;
+        this.porta_anterior = porta_anterior;
         this.remoteIp = remoteIp;
-        this.tcp_sockets = tcp_sockets;
+        this.remotePort = remotePort;
+        this.pdu = pdu.clone();this.tcp_sockets = tcp_sockets;
         this.pdu_map = pdu_map;
     }
 
