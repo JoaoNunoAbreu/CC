@@ -25,7 +25,7 @@ public class AnonGW {
             }
             System.out.println("List of all peers = " + Arrays.toString(peers));
 
-            AnonGWWorker anonGWWorker = new AnonGWWorker(remoteHost,remotePort,peers,80,6666);
+            AnonGWWorker anonGWWorker = new AnonGWWorker(remoteHost,remotePort,peers);
             anonGWWorker.listen();
         }
     }

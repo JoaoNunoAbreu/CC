@@ -25,6 +25,9 @@ public class UdpReceiver implements Runnable{
         this.pdu = pdu;
     }
 
+    /**
+     * Está à escuta de ligações UDP. Recebe informação de um Anon e dá início ao processo de comunicação entre Anon e servidor.
+     */
     public void run(){
         try{
             PDU pacote = new PDU();

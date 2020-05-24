@@ -17,15 +17,11 @@ public class AnonGWWorker{
     private final InetAddress remoteIp;
     private final int remotePort;
     private InetAddress[] nextPeers;
-    private int portaTCP;
-    private int portaUDP;
 
-    public AnonGWWorker(InetAddress remoteIp, int remotePort, InetAddress[] p,int portaTCP, int portaUDP) {
+    public AnonGWWorker(InetAddress remoteIp, int remotePort, InetAddress[] p) {
         this.remoteIp = remoteIp;
         this.remotePort = remotePort;
         this.nextPeers = p.clone();
-        this.portaTCP = portaTCP;
-        this.portaUDP = portaUDP;
     }
 
     public void listen() {
@@ -36,10 +32,10 @@ public class AnonGWWorker{
             Hashtable<Ligacao, List<PDU>> pdu = new Hashtable<>();
 
             /* Cada um dos anons passará a ouvir conexões TCP e UDP na porta 80 (portaTCP) e 6666 (portaUDP), respetivamente */
-            ServerSocket ss = new ServerSocket(portaTCP);
-            DatagramSocket socket_udp = new DatagramSocket(portaUDP);
+            ServerSocket ss = new ServerSocket(80);
+            DatagramSocket socket_udp = new DatagramSocket(6666);
 
-            new Thread(new TcpReceiver(ss,nextPeers,remoteIp,portaUDP,tcp_sockets,pdu)).start();
+            new Thread(new TcpReceiver(ss,nextPeers,remoteIp,6666,tcp_sockets,pdu)).start();
             new Thread(new UdpReceiver(socket_udp, remoteIp, remotePort,tcp_sockets,pdu)).start();
         } catch (Exception e) {
             e.printStackTrace();

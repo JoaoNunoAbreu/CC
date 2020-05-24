@@ -30,7 +30,7 @@ public class TcpReceiver implements Runnable {
     }
 
     /**
-     * Recebe as conexões TCP e dá início ao processo de comunicação entre cliente e próximo Anon
+     * Está à escuta de ligações TCP. Dá inicio ao processo de comunicação entre o cliente e o AnonGW escolhido.
      */
     public void run() {
         try {

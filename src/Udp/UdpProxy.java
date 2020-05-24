@@ -29,6 +29,9 @@ public class UdpProxy implements Runnable {
         this.pdu_map = pdu_map;
     }
 
+    /**
+     * Envia pacotes no sentido Anon --> Server e Server --> Anon
+     */
     @Override
     public void run() {
         try {
@@ -46,7 +49,7 @@ public class UdpProxy implements Runnable {
                 l = new Ligacao(InetAddress.getByName(pdu.getTarget_response()), remoteIp);
                 tcp_final = tcp_sockets.get(l);
             }
-            /* Getting data from client here */
+            /* Obter dados do cliente */
             else {
                 l = new Ligacao(remoteIp, InetAddress.getByName(pdu.getTarget_response()));
                 if(tcp_sockets.containsKey(l)) {

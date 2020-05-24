@@ -27,7 +27,7 @@ public class TcpProxy implements Runnable {
     }
 
     /**
-     * Recebe informação do cliente e manda para próximo anon escolhido aleatoriamente
+     * Recebe a informação do cliente e envia para o AnonGW (escolhido aleatoriamente), juntamente com a key
      */
     @Override
     public void run() {
@@ -41,8 +41,6 @@ public class TcpProxy implements Runnable {
             InputStream in = s.getInputStream();
             int size = in.read(buf);
             System.out.println("Linha recebida do cliente: " + Arrays.toString(buf) + " com tamanho = " + size);
-
-            //buf = Arrays.copyOfRange(buf, 0, size);
 
             /* Encriptação */
             byte[] dados_encriptados = cipher.doFinal(Arrays.copyOfRange(buf, 0, size));
