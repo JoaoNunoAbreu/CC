@@ -24,7 +24,8 @@ public class UdpProxy implements Runnable {
         this.porta_anterior = porta_anterior;
         this.remoteIp = remoteIp;
         this.remotePort = remotePort;
-        this.pdu = pdu.clone();this.tcp_sockets = tcp_sockets;
+        this.pdu = pdu.clone();
+        this.tcp_sockets = tcp_sockets;
         this.pdu_map = pdu_map;
     }
 
@@ -36,18 +37,18 @@ public class UdpProxy implements Runnable {
             Ligacao l;
 
             SecretKey chave;
-            Cipher decriptCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
-            Cipher encriptCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+            Cipher decifrar = Cipher.getInstance("DES/ECB/PKCS5Padding");
+            Cipher encriptar = Cipher.getInstance("DES/ECB/PKCS5Padding");
 
-            boolean isAnswer = pdu.getIsResposta() > 0;
-            /* Establish UDP connection with source AnonGW and TCP connection with target */
-            if(isAnswer){
-                l = new Ligacao(InetAddress.getByName(pdu.getTarget_response()), remoteIp); // client hoards data from target
+            boolean isResposta = pdu.getIsResposta() > 0;
+            /* Reestablece ligação TCP mas na ordem contrária, visto que é uma resposta */
+            if(isResposta){
+                l = new Ligacao(InetAddress.getByName(pdu.getTarget_response()), remoteIp);
                 tcp_final = tcp_sockets.get(l);
             }
             /* Getting data from client here */
             else {
-                l = new Ligacao(remoteIp, InetAddress.getByName(pdu.getTarget_response())); // target hoards data from client
+                l = new Ligacao(remoteIp, InetAddress.getByName(pdu.getTarget_response()));
                 if(tcp_sockets.containsKey(l)) {
                     tcp_final = tcp_sockets.get(l);
                 } else {
@@ -57,85 +58,87 @@ public class UdpProxy implements Runnable {
                 }
             }
 
-            /* Open both ends for TCP communication */
+            /* Ligação TCP */
             InputStream br = tcp_final.getInputStream();
             OutputStream pw = tcp_final.getOutputStream();
 
-            /* Send the packet obtained to target (TEMPORARY) */
             if(pdu.getIsLast() == 0){
-                System.out.println("Packet " + pdu.getSeqNumber() + " added to the list -> " + pdu.getFileData().length);
+                System.out.println("Pacaote com seqNumber = " + pdu.getSeqNumber() + " foi adicionado -> " + pdu.getFileData().length);
                 pdu_map.get(l).add(pdu.clone());
                 return ;
             } else {
-                /* Decrypt key obtained from final packet */
+                /* Decifra a chave que vem no último pacote */
                 byte[] key = pdu.getFileData();
-                //System.out.println("Hexadecimal key obtained: " + new String(pdu.getData()));
-                System.out.println("Key used: " + Arrays.toString(key));
                 chave = new SecretKeySpec(key, 0, key.length, "DES");
 
-                /* Init the cypher */
-                decriptCipher.init(Cipher.DECRYPT_MODE, chave);
-                encriptCipher.init(Cipher.ENCRYPT_MODE, chave);
+                if (isResposta)
+                    System.out.println("Resposta: (IPHost -> IPTarget) ------> (" + remoteIp + " -> " + pdu.getTarget_response() + ")");
+                else
+                    System.out.println("Não resposta: (IPHost -> IPTarget) ------> (" + pdu.getTarget_response() + " -> " + remoteIp + ")");
 
-                // Get the order right and send all packets
-                int total_bytes = 0;
-
-                if(isAnswer) System.out.println("Sending from session ---> (Host: " + remoteIp + ", Target: " + pdu.getTarget_response());
-                else System.out.println("Sending from session ---> (Host: " + pdu.getTarget_response() + ", Target: " + remoteIp);
-                // Sort the PDU's
+                /* Reorganiza os pacotes pela ordem do seqNumber */
                 Collections.sort(pdu_map.get(l));
 
-                // Send them
+                /* Inicializa a decifragem com a chave obtida */
+                decifrar.init(Cipher.DECRYPT_MODE, chave);
+
+                int total_bytes = 0;
+                /* Envia todos os pacotes recolhidos, por ordem */
                 for(PDU send : pdu_map.get(l)){
-                    byte[] decryptedData = decriptCipher.doFinal(send.getFileData());
+                    byte[] decryptedData = decifrar.doFinal(send.getFileData());
                     total_bytes += decryptedData.length;
                     pw.write(decryptedData);
                     pw.flush();
                 }
-                /* Clear the packets from the list since they have been sent */
+                /* Uma vez enviados, são apagados da lista */
                 pdu_map.get(l).clear();
-                System.out.println("Sending a total of " + total_bytes + " to the target.");
+                System.out.println("A enviar " + total_bytes + " bytes para o target.");
             }
 
-            /* Keep getting data from target */
+            /* Leitura de dados vindos do target */
             byte[] data = new byte[1448];
             int packet_num = 0;
             int count, total = 0;
+
+            /* Inicializa a encriptagem com a chave obtida */
+            encriptar.init(Cipher.ENCRYPT_MODE, chave);
+
             while((count = br.read(data)) != -1) {
                 total += count;
-                System.out.println("Sent packet " + packet_num + " -> " + count);
-                /* Wrap the data in a PDU */
-                byte[] encryptedData = encriptCipher.doFinal(Arrays.copyOfRange(data, 0, count));
+                System.out.println("Pacote com seqNumber = " + packet_num + " foi adicionado -> bytes = " + count);
+
+                /* Criação do PDU com os dados encriptados */
+                byte[] encryptedData = encriptar.doFinal(Arrays.copyOfRange(data, 0, count));
                 PDU pdu = new PDU(encryptedData,encryptedData.length);
                 pdu.setTarget_response(this.pdu.getTarget_response());
                 pdu.setIsResposta(1);
                 pdu.setSeqNumber(packet_num++);
 
-                /* Send its to the other AnonGW */
+                /* Envia para o Anon anterior */
                 byte[] send_data = pdu.toBytes();
                 DatagramPacket send = new DatagramPacket(send_data, send_data.length, ip_anterior, porta_anterior);
                 udp.send(send);
             }
-            System.out.println("SENT " + total + " BYTES!");
+            System.out.println("Nº de bytes enviados: " + total);
 
             Thread.sleep(100);
 
             if(packet_num > 0) {
-                /* Send the terminating packet if any packets got send at all */
+                /* A enviar o último pacote, com a key */
                 PDU last = new PDU(chave.getEncoded(),chave.getEncoded().length);
                 last.setTarget_response(pdu.getTarget_response());
                 last.setIsResposta(1);
                 last.setIsLast(1);
                 last.setSeqNumber(packet_num);
 
-                /* Send it to the other AnonGW */
+                /* Envia para o Anon anterior */
                 DatagramPacket send = new DatagramPacket(last.toBytes(), last.toBytes().length, ip_anterior, porta_anterior);
                 udp.send(send);
-                System.out.println("SENT LAST PACKET");
+                System.out.println("Pacote com a key foi enviado");
             }
             udp.close();
         } catch(BadPaddingException e){
-            System.out.println("Key got corrupted! Try asking again.") ;
+            System.out.println("Chave inválida.") ;
         } catch (Exception e) {
             e.printStackTrace();
         }
