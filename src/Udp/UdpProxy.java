@@ -1,6 +1,7 @@
 package Udp;
 
 import AnonGW.Ligacao;
+import Encryption.AESencrp;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -35,9 +36,6 @@ public class UdpProxy implements Runnable {
             DatagramSocket udp = new DatagramSocket();
             Socket tcp_final;
             Ligacao l;
-            SecretKey secretKey;
-            Cipher decriptCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
-            Cipher encriptCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
             // FIXME checkar se é por causa de ser boolean
             boolean isResposta = pdu.getIsResposta() > 0;            /* Establish UDP connection with source AnonGW and TCP connection with target */
             if(isResposta){
@@ -66,15 +64,14 @@ public class UdpProxy implements Runnable {
                 pdu_map.get(l).add(pdu.clone());
                 return ;
             } else {
-                /* Decrypt key obtained from final packet */
-                byte[] key = pdu.getFileData();
-                //System.out.println("Hexadecimal key obtained: " + new String(pdu.getData()));
-                System.out.println("Key used: " + Arrays.toString(key));
-                secretKey = new SecretKeySpec(key, 0, key.length, "DES");
+                /* Decrypt key obtained from final packet
+                byte[] key = pdu.getFileData();*/
+                /*System.out.println("Key used: " + Arrays.toString(key));
+                secretKey = new SecretKeySpec(key, 0, key.length, "DES");*/
 
-                /* Init the cypher */
+                /* Init the cypher
                 decriptCipher.init(Cipher.DECRYPT_MODE, secretKey);
-                encriptCipher.init(Cipher.ENCRYPT_MODE, secretKey);
+                encriptCipher.init(Cipher.ENCRYPT_MODE, secretKey);*/
 
                 // Get the order right and send all packets
                 int total_bytes = 0;
@@ -89,7 +86,7 @@ public class UdpProxy implements Runnable {
 
                 // Send them
                 for(PDU sender : pdu_map.get(l)){
-                    byte[] dados_decifrados = decriptCipher.doFinal(sender.getFileData());
+                    byte[] dados_decifrados = AESencrp.decrypt(sender.getFileData());
                     total_bytes += dados_decifrados.length;
                     pw.write(dados_decifrados);
                     pw.flush();
@@ -101,15 +98,17 @@ public class UdpProxy implements Runnable {
             }
 
             /* Keep getting data from target */
-            // FIXME checkar aqui
-            byte[] data = new byte[1448];
+            byte[] info = new byte[1448];
             int size, seqNumber = 0;
             int total = 0;
-            while((size = br.read(data)) != -1) {
+            while((size = br.read(info)) != -1) {
                 total += size;
                 System.out.println("Sent packet " + seqNumber + " -> " + size);
+
                 /* Wrap the data in a PDU */
-                byte[] dados_encriptados = encriptCipher.doFinal(Arrays.copyOfRange(data, 0, size));
+
+                info = Arrays.copyOfRange(info, 0, size);
+                byte[] dados_encriptados = AESencrp.encrypt(info);
                 PDU pdu = new PDU(dados_encriptados,dados_encriptados.length);
                 pdu.setTarget_response(this.pdu.getTarget_response());
                 pdu.setIsResposta(1);
@@ -127,7 +126,7 @@ public class UdpProxy implements Runnable {
 
             if(seqNumber > 0) {
                 /* Send the terminating packet if any packets got send at all */
-                PDU last = new PDU(secretKey.getEncoded(),secretKey.getEncoded().length);
+                PDU last = new PDU("111".getBytes(),"111".getBytes().length);
                 last.setTarget_response(pdu.getTarget_response());
                 last.setIsResposta(1);
                 last.setIsLast(1);
