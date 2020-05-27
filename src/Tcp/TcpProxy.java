@@ -47,10 +47,10 @@ public class TcpProxy implements Runnable {
             /* Criação do PDU */
             PDU pacote = new PDU(dados_encriptados,dados_encriptados.length);
             pacote.setTarget_response(s.getInetAddress().getHostName());
+            System.out.println("s.getInetAddress().getHostName() = " + s.getInetAddress().getHostName());
 
             /* Envio do PDU */
             byte[] mensagem = pacote.toBytes();
-            System.out.println("Mensagem a enviar para próximo anon: " + Arrays.toString(mensagem));
             DatagramPacket sender = new DatagramPacket(mensagem,mensagem.length,peers[rnd],port);
             socket_udp.send(sender);
 

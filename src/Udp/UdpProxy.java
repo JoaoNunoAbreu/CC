@@ -30,7 +30,7 @@ public class UdpProxy implements Runnable {
     }
 
     /**
-     * Envia pacotes no sentido Anon --> Server e Server --> Anon
+     * Envia pacotes no sentido Anon --> Server, Server --> Anon e Anon --> Anon anterior
      */
     @Override
     public void run() {
