@@ -38,7 +38,6 @@ public class TcpProxy implements Runnable {
             /* À espera de dados do socket */
             InputStream in = s.getInputStream();
             int size = in.read(buf);
-            System.out.println("Linha recebida do cliente: " + Arrays.toString(buf) + " com tamanho = " + size);
 
             /* Encriptação */
             byte[] dados_encriptados = cipher.doFinal(Arrays.copyOfRange(buf, 0, size));
