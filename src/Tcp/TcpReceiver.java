@@ -48,7 +48,6 @@ public class TcpReceiver implements Runnable {
 
                 /* Cria a cifra e inicializa */
                 Cipher cifra = Cipher.getInstance("DES/ECB/PKCS5Padding");
-                cifra.init(Cipher.ENCRYPT_MODE, chave);
 
                 new Thread(new TcpProxy(s,peers,port,chave.getEncoded(), cifra)).start();
             }
