@@ -61,6 +61,8 @@ public class UdpProxy implements Runnable {
                 }
             }
 
+            System.out.println("Establecida ligação " + tcp_final.toString());
+
             /* Ligação TCP */
             InputStream br = tcp_final.getInputStream();
             OutputStream pw = tcp_final.getOutputStream();
